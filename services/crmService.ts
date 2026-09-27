@@ -329,7 +329,9 @@ const cacheCRMCompany = (companyName: string) => {
       const updated = [...existing, companyName];
       localStorage.setItem(LOCAL_COMPANIES_KEY, JSON.stringify(updated));
     }
-  } catch {}
+  } catch {
+    /* localStorage access not available or quota exceeded */
+  }
 };
 
 /**
@@ -362,7 +364,9 @@ export const fetchCRMCompanies = async (): Promise<string[]> => {
         foundNames.push(data.clientTypeDetail.trim());
       }
     });
-  } catch {}
+  } catch {
+    /* fallback quietly if leads cannot be enumerated */
+  }
 
   const combined = Array.from(new Set([...seedCompanies, ...cached, ...foundNames])).filter(Boolean).sort((a, b) => a.localeCompare(b));
   return combined;

@@ -132,7 +132,9 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({
       const trimmedCompany = newCompanyInput.trim();
       try {
         await addCRMCompany(trimmedCompany);
-      } catch {}
+      } catch {
+        /* company already cached or offline */
+      }
       finalClientTypeDetail = trimmedCompany;
     }
 

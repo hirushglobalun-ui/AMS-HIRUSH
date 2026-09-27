@@ -26,7 +26,9 @@ export const formatApplyDate = (createdAt: any): string => {
     if (!isNaN(d.getTime())) {
       return getLocalDateString(d);
     }
-  } catch {}
+  } catch {
+    /* ignore date parse error and fallback to N/A */
+  }
   return 'N/A';
 };
 

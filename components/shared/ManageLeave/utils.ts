@@ -23,7 +23,9 @@ export const formatApplyDate = (createdAt: any) => {
         if (!isNaN(d.getTime())) {
             return d.toISOString().split('T')[0];
         }
-    } catch (e) {}
+    } catch (_e) {
+        /* ignore invalid date string */
+    }
     return 'N/A';
 };
 
