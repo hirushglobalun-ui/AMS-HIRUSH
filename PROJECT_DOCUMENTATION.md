@@ -55,11 +55,315 @@ HIRUSH GLOBAL AMS TECHNOLOGY STACK
 
 ---
 
-## 3. Master Directory & File Catalog
+## 3. Complete Code Structure & Visual Directory Tree
+
+```text
+ams/
+├── .firebaserc                              # Firebase project environment mapping
+├── .gitignore                               # Git ignored paths and build artifacts
+├── ARCHITECTURE.md                          # Framework architecture documentation
+├── DEPLOYMENT.md                            # Production deployment procedures
+├── ENVIRONMENT.md                           # Environment variables matrix
+├── eslint.config.js                         # ESLint 9 configuration
+├── firebase.json                            # Firebase rules & hosting setup
+├── firebase.ts                              # Firebase Client SDK initialization
+├── firestore.rules                          # Cloud Firestore RBAC rules
+├── global.d.ts                              # Ambient TypeScript declarations
+├── index.css                                # Global Tailwind CSS base & utilities
+├── metadata.json                            # System metadata
+├── MIGRATION_AUDIT.md                       # Vite-to-Next.js migration log
+├── next.config.mjs                          # Next.js configuration
+├── next-env.d.ts                            # Next.js type declarations
+├── package.json                             # NPM scripts and dependencies
+├── package-lock.json                        # Locked dependencies tree
+├── postcss.config.js                        # PostCSS configuration
+├── PROJECT_DOCUMENTATION.md                 # Complete project manual & catalog
+├── README.md                                # Project summary & quickstart
+├── ROUTE_MIGRATION.md                       # Next.js route mapping guide
+├── setup-windows-scheduler.bat              # Task scheduler batch script
+├── tailwind.config.js                       # Tailwind CSS color tokens & theme
+├── TESTING.md                               # Regression and unit testing guide
+├── tsconfig.json                            # TypeScript configuration
+├── types.ts                                 # Global TypeScript types & enums
+│
+├── app/                                     # Next.js Native App Router
+│   ├── globals.css                          # App-wide styles
+│   ├── layout.tsx                           # Master HTML & AuthProvider shell
+│   ├── page.tsx                             # Root landing / role-aware router
+│   ├── attendance/                          # Attendance route
+│   │   └── page.tsx                         # /attendance
+│   ├── biometrics/                          # Biometrics management route
+│   │   └── page.tsx                         # /biometrics
+│   ├── crm/                                 # B2B Lead CRM route
+│   │   └── page.tsx                         # /crm
+│   ├── dashboard/                           # Main dashboard route
+│   │   └── page.tsx                         # /dashboard
+│   ├── domains/                             # Domain & hosting monitor route
+│   │   └── page.tsx                         # /domains
+│   ├── holidays/                            # Holidays calendar route
+│   │   └── page.tsx                         # /holidays
+│   ├── leave/                               # Leave management route
+│   │   └── page.tsx                         # /leave
+│   ├── login/                               # Authentication route
+│   │   └── page.tsx                         # /login
+│   ├── messages/                            # Real-time messages route
+│   │   └── page.tsx                         # /messages
+│   ├── profile/                             # Employee profile & ID card route
+│   │   └── page.tsx                         # /profile
+│   ├── settings/                            # Geofence & admin settings route
+│   │   └── page.tsx                         # /settings
+│   ├── setup/                               # First-time Super Admin setup
+│   │   └── page.tsx                         # /setup
+│   └── users/                               # Team directory route
+│       └── page.tsx                         # /users
+│
+├── components/                              # Modular Component System
+│   ├── Login.tsx                            # Primary login component
+│   │
+│   ├── layout/                              # Layout Shell & Navigation
+│   │   ├── AuthGuard.tsx                    # Client-side RBAC guard
+│   │   ├── DashboardLayout.tsx              # Master layout (sidebar, header, content)
+│   │   └── navConfig.ts                     # Navigation definitions & allowed roles
+│   │
+│   ├── common/                              # Reusable Atomic UI Elements
+│   │   ├── Button.tsx                       # Variant button (primary, outline, danger)
+│   │   ├── Card.tsx                         # Surface container
+│   │   ├── DocumentUploadField.tsx          # Drag-and-drop file uploader
+│   │   ├── FormInput.tsx                    # Form field with label & validation
+│   │   ├── Header.tsx                       # Dashboard top bar & notifications
+│   │   ├── Modal.tsx                        # Accessible dialog backdrop modal
+│   │   ├── PWAInstallPrompt.tsx             # PWA installation banner
+│   │   ├── SplashScreen.tsx                 # Animated auth splash screen
+│   │   └── SWRegister.tsx                   # Service worker registration component
+│   │
+│   ├── setup/                               # System Onboarding
+│   │   └── FirstTimeSetup.tsx               # Super Admin creation wizard
+│   │
+│   ├── admin/                               # Super Admin & Admin Views
+│   │   ├── AdminDashboard.tsx               # Admin shell view router
+│   │   ├── AdminSettings.tsx                # Geofence Leaflet map & bypass config
+│   │   ├── Dashboard.tsx                    # Master executive KPI overview
+│   │   ├── IDCard.tsx                       # Digital ID card renderer & PNG exporter
+│   │   ├── ManageHolidays.tsx               # Holiday calendar manager
+│   │   ├── ManageMessages.tsx               # Announcement broadcast console
+│   │   ├── ManageUsers.tsx                  # User administration & role assignment
+│   │   ├── Profile.tsx                      # Administrator personal profile
+│   │   │
+│   │   ├── biometrics/                      # Biometrics Sub-Module (<200 lines)
+│   │   │   ├── BiometricFilterBar.tsx       # Search and department filter controls
+│   │   │   ├── BiometricModeCard.tsx        # Mode policy card (GPS vs Biometric)
+│   │   │   ├── BiometricStatsCards.tsx      # Device statistics cards
+│   │   │   ├── BiometricUserRow.tsx         # User row & slot approval buttons
+│   │   │   ├── ManageBiometrics.tsx         # Master orchestrator view
+│   │   │   ├── types.ts                     # Biometric component types
+│   │   │   └── useBiometricsData.ts         # Biometrics state & approval actions hook
+│   │   │
+│   │   └── crm/                             # Lead CRM Sub-Module (<200 lines)
+│   │       ├── GlobalLeadCalendar.tsx       # Calendar for tasks and meetings
+│   │       ├── ImportLeadsModal.tsx         # CSV bulk import wizard
+│   │       ├── LeadActivityManager.tsx      # Activity timeline (Calls, Tasks, Notes)
+│   │       ├── LeadCategoryTabs.tsx         # Company vs Raw Scraped switcher
+│   │       ├── LeadDetailView.tsx           # Lead metadata slide-over
+│   │       ├── LeadFormClientSection.tsx    # Client contact form section
+│   │       ├── LeadFormGeneralSection.tsx   # Status and scheduling section
+│   │       ├── LeadFormModal.tsx            # Multi-section lead edit modal
+│   │       ├── LeadFormProjectSection.tsx   # Project & POC form section
+│   │       ├── leadFormUtils.ts             # Validation helpers & initial states
+│   │       ├── LeadStatsCards.tsx           # Sales pipeline metric cards
+│   │       ├── LeadTable.tsx                # Responsive CRM data table
+│   │       ├── ManageLeads.tsx              # Master CRM orchestrator view
+│   │       └── useManageLeadsData.ts        # Lead queries & Google Sheets hook
+│   │
+│   ├── hr/                                  # Human Resources Views
+│   │   ├── Dashboard.tsx                    # HR dashboard (attendance, leave queue)
+│   │   ├── HRDashboard.tsx                  # HR shell view router
+│   │   ├── HRSettings.tsx                   # Office boundary settings view
+│   │   ├── ManageMessages.tsx               # HR announcement console
+│   │   ├── ManageUsers.tsx                  # HR team directory management
+│   │   └── Profile.tsx                      # HR personal profile
+│   │
+│   ├── user/                                # Employee & Intern Views
+│   │   ├── Attendance.tsx                   # Employee attendance hub
+│   │   ├── Holidays.tsx                     # Employee holiday calendar
+│   │   ├── Leave.tsx                        # Employee leave hub
+│   │   ├── Messages.tsx                     # Employee notice board & alerts
+│   │   ├── Profile.tsx                      # Employee profile & digital ID badge
+│   │   ├── UserDashboard.tsx                # User shell view router
+│   │   ├── UserHome.tsx                     # Employee home landing
+│   │   │
+│   │   ├── attendance/                      # Employee Attendance Sub-Module
+│   │   │   ├── AttendanceCheckIn.tsx        # Punch clock, WebAuthn & GPS validator
+│   │   │   ├── AttendanceDetailModal.tsx    # Session breakdown modal
+│   │   │   ├── AttendanceTimeline.tsx       # Daily visual punch timeline
+│   │   │   ├── LeaveQuotaTracker.tsx        # Progress meters for leave balances
+│   │   │   ├── useAttendanceActions.ts      # Punch-in/out and WFH action hook
+│   │   │   ├── useAttendanceStats.ts        # Monthly metrics calculation hook
+│   │   │   └── utils.ts                     # Haversine distance & session math
+│   │   │
+│   │   ├── home/                            # Employee Home Widgets
+│   │   │   ├── HomeAnnouncementsWidget.tsx  # Carousel of recent notices
+│   │   │   ├── HomeAttendanceWidget.tsx     # Quick punch shortcut & today's hours
+│   │   │   ├── HomeCelebrationsWidget.tsx   # Birthdays and work anniversaries
+│   │   │   └── useUserHomeData.ts           # Home feed state and subscription hook
+│   │   │
+│   │   └── leave/                           # Employee Leave Sub-Module
+│   │       ├── LeaveApplyForm.tsx           # Leave submission form
+│   │       ├── LeaveHistoryTable.tsx        # Submitted requests table
+│   │       ├── LeaveQuotaSummaryCards.tsx   # Quota balance cards
+│   │       ├── leaveUtils.ts                # Working days & deduction math
+│   │       └── useLeaveData.ts              # Leave applications & quotas hook
+│   │
+│   └── shared/                              # Shared Enterprise Features
+│       ├── DomainManager.tsx                # Enterprise domain monitor orchestrator
+│       ├── DomainManager/                   # Domain Manager Sub-Module
+│       │   ├── DomainCard.tsx               # Domain card with health indicators
+│       │   ├── DomainFilterBar.tsx          # Search & status filter controls
+│       │   ├── DomainModal.tsx              # Add/edit custom domain modal
+│       │   ├── DomainStatsCards.tsx         # Domain summary statistics
+│       │   ├── domainUtils.ts               # Days remaining & WhatsApp link math
+│       │   ├── types.ts                     # Domain component types
+│       │   └── useDomainData.ts             # Domain query & health audit hook
+│       │
+│       ├── ManageAttendance/                # Attendance Management Sub-Module
+│       │   ├── AttendanceDetailModal.tsx    # Punch session breakdown dialog
+│       │   ├── AttendanceOverviewCards.tsx  # Executive overview cards
+│       │   ├── AttendanceTable.tsx          # Full team attendance table
+│       │   ├── EditAttendanceModal.tsx      # Admin manual timestamp adjustment
+│       │   ├── index.tsx                    # Attendance management orchestrator
+│       │   ├── useManageAttendanceData.ts   # Filter, date, and query hook
+│       │   └── utils.ts                     # Format hours to HH:MM:SS
+│       │
+│       ├── ManageLeave/                     # Leave Administration Sub-Module
+│       │   ├── index.tsx                    # Leave admin container
+│       │   ├── LeaveActionModal.tsx         # Approve / reject dialog with remarks
+│       │   ├── LeaveDetailModal.tsx         # Full leave request detail view
+│       │   ├── LeaveTable.tsx               # Multi-status leave requests table
+│       │   └── utils.ts                     # Leave status badge color helpers
+│       │
+│       ├── UserDetailView/                  # Deep-Dive Employee Drawer
+│       │   ├── AttendanceTab.tsx            # Personal attendance calendar tab
+│       │   ├── index.tsx                    # Slide-over profile drawer shell
+│       │   ├── PersonalInfoTab.tsx          # Bank, emergency contacts, documents
+│       │   ├── UserHeader.tsx               # Avatar, designation, status pill
+│       │   └── utils.ts                     # Monthly attendance rate calculations
+│       │
+│       ├── user-modals/                     # Shared User Dialogs
+│       │   ├── IDCardModal.tsx              # Digital ID badge preview & download
+│       │   ├── UserDeleteModal.tsx          # Safe user deletion confirmation
+│       │   └── UserFormModal.tsx            # Multi-tab user onboarding modal
+│       │
+│       └── user-tables/                     # Shared User Tables
+│           ├── ManageUsersStats.tsx         # Staff counts summary
+│           └── UsersTable.tsx               # Paginated employee directory table
+│
+├── contexts/                                # State Contexts
+│   └── AuthContext.tsx                      # Global session & SSR-safe hydration
+│
+├── hooks/                                   # Application Custom Hooks
+│   ├── useNotifications.ts                  # Real-time messages & unread counter
+│   └── usePWAInstall.ts                     # PWA install prompt handler
+│
+├── services/                                # Business Logic & External Services
+│   ├── auditService.ts                      # Immutable audit logging to Firestore
+│   ├── blobService.ts                       # Document uploads via Vercel Blob
+│   ├── crmService.ts                        # Lead CRUD & Google Sheets webhook sync
+│   ├── dataService.ts                       # Paginated Firestore operations
+│   ├── exportService.ts                     # Excel/CSV generation via SheetJS
+│   └── geminiService.ts                     # AI SRS generation via Google GenAI SDK
+│
+├── utils/                                   # Core Pure Utilities
+│   ├── biometricService.ts                  # WebAuthn hardware registration & verify
+│   ├── userUtils.ts                         # User display formatting helpers
+│   └── wfhHelper.ts                         # Haversine distance & geofence validation
+│
+├── tests/                                   # Automated Unit Test Suite
+│   ├── attendance.test.ts                   # 8h workday, split shifts, auto-checkout
+│   ├── domain.test.ts                       # Expiry countdown & boundary timezone math
+│   ├── geofence.test.ts                     # Haversine distance & perimeter checks
+│   └── leave.test.ts                        # Half-day, multi-day, holiday exemptions
+│
+├── public/                                  # Static Assets & PWA
+│   ├── generate-icons.html                  # Icon generator utility
+│   ├── manifest.json                        # PWA Web App Manifest
+│   ├── manifest.webmanifest                 # Web manifest fallback
+│   ├── pwa-192x192.svg                      # PWA compact icon
+│   ├── pwa-512x512.svg                      # PWA high-res icon
+│   ├── pwa-icons-guide.md                   # PWA icon setup instructions
+│   ├── sw.js                                # Network-First service worker
+│   └── assets/                              # Brand logos and favicons
+│
+├── scripts/                                 # Operational & Diagnostics Scripts
+│   ├── auto-domain-checker.js               # Scheduled domain DNS/SSL auditor
+│   └── test-fetch.js                        # Network reachability diagnostic
+│
+└── functions/                               # Cloud Backend
+    ├── package.json                         # Cloud Functions dependencies
+    ├── tsconfig.json                        # Functions TypeScript configuration
+    └── src/
+        └── index.ts                         # Scheduled crons for auto-checkout & alerts
+```
+
+---
+
+## 4. Layered System Architecture & Data Flow
+
+```text
++---------------------------------------------------------------------------------------+
+|                                1. PRESENTATION LAYER                                  |
+|  - Next.js 16 App Router (/dashboard, /attendance, /leave, /crm, /domains, etc.)      |
+|  - Tailwind CSS 3.4 Responsive Design (Dark/Light Modes, Desktop Sidebar, Mobile Draw)|
+|  - Client Components ("use client"): WebAuthn, Leaflet Maps, html2canvas, Recharts    |
+|  - Server Layout (app/layout.tsx): SEO Metadata, Viewport, Inter Font, Service Worker |
++------------------------------------------+--------------------------------------------+
+                                           |
+                                           v
++---------------------------------------------------------------------------------------+
+|                             2. ROUTING & ACCESS CONTROL                               |
+|  - AuthGuard.tsx: Intercepts unauthorized route access and redirects by role          |
+|  - navConfig.ts: Centralized role-based navigation dictionary                         |
+|  - DashboardLayout.tsx: Frame containing Header, Mobile Navigation, and Sidebar       |
++------------------------------------------+--------------------------------------------+
+                                           |
+                                           v
++---------------------------------------------------------------------------------------+
+|                             3. STATE & SUBSCRIPTION LAYER                             |
+|  - AuthContext.tsx: Firebase Auth listener, SSR-safe hydration, User session memory   |
+|  - useNotifications.ts: Real-time onSnapshot listener for messages and unread counter|
+|  - Domain, CRM, Attendance & Leave Custom Hooks (Encapsulated state & mutations)      |
++------------------------------------------+--------------------------------------------+
+                                           |
+                                           v
++---------------------------------------------------------------------------------------+
+|                            4. BUSINESS LOGIC & SERVICES                               |
+|  - dataService.ts: Centralized Firestore queries, user CRUD, batch attendance writes  |
+|  - crmService.ts: Lead management, activity logs, asynchronous Google Sheets webhook  |
+|  - biometricService.ts: WebAuthn FIDO2 navigator.credentials creation & authentication|
+|  - wfhHelper.ts / utils.ts: Haversine geodesic distance validation & work credit math |
+|  - exportService.ts: SheetJS (.xlsx/.csv) generation                                  |
+|  - blobService.ts: Vercel Blob storage integration                                    |
+|  - geminiService.ts: Google GenAI SDK integration                                     |
+|  - auditService.ts: Immutable security audit log recorder                             |
++------------------------------------------+--------------------------------------------+
+                                           |
+                                           v
++---------------------------------------------------------------------------------------+
+|                         5. PERSISTENCE & HARDWARE INTEGRATIONS                        |
+|  - Cloud Firestore: 11 Collections guarded by strict firestore.rules                  |
+|  - Firebase Authentication: Primary + Secondary apps for non-destructive user creation|
+|  - Platform Biometric Sensor: Windows Hello, Apple Touch ID/Face ID, Android Sensors   |
+|  - Device Geolocation: navigator.geolocation GPS coordinate validation                |
+|  - External APIs: EmailJS, WhatsApp URL Scheme, Vercel Blob, Google Sheets Webhook    |
++---------------------------------------------------------------------------------------+
+```
+
+---
+
+## 5. Master Directory & File Catalog
 
 Below is the complete, exhaustive catalog of every source file in the repository, organized by folder with exact relative paths, line counts, and technical responsibilities.
 
-### 3.1. Project Root & Configuration Files
+### 5.1. Project Root & Configuration Files
+
 
 | File Path | Lines | Purpose / Responsibility |
 | :--- | :---: | :--- |
@@ -354,9 +658,9 @@ Below is the complete, exhaustive catalog of every source file in the repository
 
 ---
 
-## 4. Key Subsystem Workflows & Technical Implementation
+## 6. Key Subsystem Workflows & Technical Implementation
 
-### 4.1. WebAuthn Biometric Verification (Anti-Buddy Punching)
+### 6.1. WebAuthn Biometric Verification (Anti-Buddy Punching)
 * **Registration Flow (`biometricService.ts`):**
   1. The user requests to register a hardware authenticator slot (e.g. Thumb, Index, or Backup phone).
   2. The browser generates a random 32-byte cryptographic challenge.
@@ -367,7 +671,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
   1. When punching in, `navigator.credentials.get()` challenges the platform sensor.
   2. Successful biometrics verification attaches `biometricVerified: true` and the corresponding `deviceId` to the punch session record in `/attendance`.
 
-### 4.2. GPS Geofencing & Work From Home (WFH)
+### 6.2. GPS Geofencing & Work From Home (WFH)
 * **Office Coordinate Validation (`wfhHelper.ts`):**
   - Uses the Haversine formula to compute geodesic distance between the browser's `navigator.geolocation` coordinates and the office latitude/longitude configured in `/settings`.
   ```typescript
@@ -383,7 +687,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
   - If the employee belongs to a configured **Bypass Department**, GPS distance is waived.
   - If outside the radius, the employee must select **Work From Home (WFH)** and provide task justifications.
 
-### 4.3. Leave Calculation & Deduction Logic
+### 6.3. Leave Calculation & Deduction Logic
 * **Deduction Engine (`components/user/attendance/utils.ts`):**
   - **Half Day:** Deducts 0.5 days, provided the day is not a Sunday or public holiday.
   - **Multi-Day Range:** Iterates day by day between `startDate` and `endDate`:
@@ -392,7 +696,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
     3. If the employee has an attendance record with `totalHours > 0` on that date, it is considered worked and **not deducted**.
     4. Otherwise, 1.0 day is deducted from the approved leave balance.
 
-### 4.4. Domain & SSL Health Monitor
+### 6.4. Domain & SSL Health Monitor
 * **Automated DNS & Expiry Check (`domainUtils.ts`, `auto-domain-checker.js`):**
   - Aggregates domain records from both `/leads` (CRM domains) and `/domains` (Custom domains).
   - Calculates `daysRemaining = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24))`.
@@ -405,9 +709,9 @@ Below is the complete, exhaustive catalog of every source file in the repository
 
 ---
 
-## 5. Cloud Firestore Database Schema
+## 7. Cloud Firestore Database Schema & Security Rules
 
-The database consists of 11 collections secured by Firestore Security Rules:
+The database consists of 11 collections secured by Firestore Security Rules (`firestore.rules`):
 
 ```text
 Cloud Firestore (hirush-global-ams)
@@ -426,9 +730,9 @@ Cloud Firestore (hirush-global-ams)
 
 ---
 
-## 6. Testing, Build & Deployment Guide
+## 8. Testing, Build & Deployment Guide
 
-### 6.1. Running the Automated Unit Test Suite
+### 8.1. Running the Automated Unit Test Suite
 The project contains 17 automated unit tests covering business logic calculations with zero external mocking overhead:
 
 ```bash
@@ -449,7 +753,7 @@ TAP version 13
 # fail 0
 ```
 
-### 6.2. Production Build & Static Page Generation
+### 8.2. Production Build & Static Page Generation
 ```bash
 # Run Next.js production build with Turbopack
 npm run build
@@ -457,11 +761,54 @@ npm run build
 Generates 16 static routes:
 - `/`, `/_not-found`, `/attendance`, `/biometrics`, `/crm`, `/dashboard`, `/domains`, `/holidays`, `/leave`, `/login`, `/messages`, `/profile`, `/settings`, `/setup`, `/users`.
 
-### 6.3. Production Deployment Commands
+### 8.3. Production Deployment Commands
 ```bash
 # Start Next.js production server on port 3005
 npm run start
 ```
+
+---
+
+## 9. Component Interaction & Dependency Hierarchy
+
+```text
+app/layout.tsx (Master Layout)
+ └── AuthProvider (contexts/AuthContext.tsx)
+      └── app/{route}/page.tsx
+           └── AuthGuard (components/layout/AuthGuard.tsx)
+                └── DashboardLayout (components/layout/DashboardLayout.tsx)
+                     ├── Header (components/common/Header.tsx)
+                     │    ├── Notification Bell (hooks/useNotifications.ts)
+                     │    └── User Profile Pill (contexts/AuthContext.tsx)
+                     │
+                     ├── Sidebar & Mobile Drawer (components/layout/navConfig.ts)
+                     │
+                     └── Page Content View (Active Route):
+                          ├── /dashboard  -> AdminDashboard / HRDashboard / UserHome
+                          ├── /attendance -> ManageAttendance / UserAttendance
+                          ├── /leave      -> ManageLeave / UserLeave
+                          ├── /users      -> ManageUsers / UsersTable / UserDetailView
+                          ├── /biometrics -> ManageBiometrics / BiometricUserRow
+                          ├── /crm        -> ManageLeads / LeadTable / LeadFormModal
+                          ├── /domains    -> DomainManager / DomainCard / DomainModal
+                          ├── /settings   -> AdminSettings / Leaflet Geofence Map
+                          ├── /holidays   -> ManageHolidays / UserHolidays
+                          └── /profile    -> Profile / IDCard (html2canvas)
+```
+
+---
+
+## 10. State Management & Hydration Architecture
+
+1. **Session Hydration Safety:**
+   - In Next.js App Router, components initially evaluate on the server during build and pre-render phases.
+   - `AuthContext.tsx` guards accesses to `sessionStorage` and `localStorage` with `typeof window !== 'undefined'` checks.
+   - Initial state mounts with safe placeholders (`loading: true`), preventing React 19 hydration mismatch errors.
+2. **Browser APIs & Dynamic Isolation:**
+   - **Leaflet & OpenStreetMap:** Dynamically imported on client mount to avoid `window is not defined` crashes.
+   - **WebAuthn (`navigator.credentials`):** Encapsulated within `biometricService.ts` and called strictly inside user interaction handlers.
+   - **Geolocation (`navigator.geolocation`):** Invoked inside `useAttendanceActions.ts` during active clock-in events.
+   - **Canvas Rendering (`html2canvas`):** Invoked inside `IDCardModal.tsx` strictly on user download button click.
 
 ---
 *Manual compiled and verified for Hirush Global AMS Production Release.*
