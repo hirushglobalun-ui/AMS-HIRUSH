@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file ManageBiometrics.tsx
  * @description Dedicated Admin & HR panel for managing employee biometric fingerprints, approvals, multi-finger devices, and attendance verification modes.
