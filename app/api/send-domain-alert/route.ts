@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     } = body;
 
     const gmailUser = process.env.GMAIL_USER || 'hirushglobalun@gmail.com';
-    const gmailPass = process.env.GMAIL_APP_PASS || 'tosf dpji mlfh vxem';
+    const gmailPass = process.env.GMAIL_APP_PASS || 'qsrx ykqj qukr wrvv';
     const recipient = toEmail || process.env.ALERT_TO_EMAIL || gmailUser;
 
     if (!gmailUser || !gmailPass) {
