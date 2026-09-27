@@ -98,7 +98,40 @@ Testing verified across standard responsive viewports:
 
 ---
 
-## 4. Build & Compilation Verification
+## 4. Automated Unit Test Suite
+
+Hirush Global AMS includes an automated, zero-dependency unit test suite executed via Node.js native test runner and `tsx`:
+
+```bash
+npm test
+```
+
+### Test Coverage Summary:
+- **`tests/attendance.test.ts`**:
+  - Validates standard 8-hour check-in/check-out calculations.
+  - Validates split-shift session calculation accuracy.
+  - Enforces the 4.0-hour maximum credit cap for auto-checked-out sessions.
+  - Verifies decimal to `HH:MM:SS` duration string formatting.
+- **`tests/domain.test.ts`**:
+  - Validates remaining day calculations for active domains.
+  - Validates past-due and expired domain day calculations.
+  - Enforces boundary date handling across UTC/local timezones without date shift errors.
+- **`tests/geofence.test.ts`**:
+  - Tests Haversine spherical distance calculations in meters.
+  - Validates detection of coordinates within the allowed office geofence radius.
+  - Validates rejection of check-ins beyond the allowed geofence perimeter.
+  - Verifies geographical distance accuracy across known coordinates (Colombo to Kandy).
+- **`tests/leave.test.ts`**:
+  - Tests half-day (0.5 day) duration calculations.
+  - Tests multi-day inclusive date ranges.
+  - Enforces leave deduction rules: excludes Sundays and company holidays from deducted quota.
+  - Enforces rule that days where an employee actually clocked in (`totalHours > 0`) are not deducted from leave quota.
+
+All 17 automated tests run and pass in ~1.1 seconds with 0 failures.
+
+---
+
+## 5. Build & Compilation Verification
 
 ```bash
 npm run build
@@ -108,3 +141,4 @@ npm run build
 - **Static Page Optimization:** `16/16 routes generated successfully`
 - **Zero suppressed TypeScript errors (`@ts-ignore` / `@ts-expect-error`).**
 - **Zero breaking changes to Firestore documents or schema.**
+

@@ -1,33 +1,39 @@
 "use client";
 
 /**
- * File: DashboardLayout.tsx
- * Purpose: Centralized layout wrapper for all dashboards to eliminate UI code duplication.
- * Author: Refactored system
- * Notes: Preserves exact original UI behavior and responsiveness while ensuring DRY principles.
+ * File: components/layout/DashboardLayout.tsx
+ * Purpose: Native Next.js responsive dashboard layout with persistent sidebar and header.
+ * Notes:
+ *  - Uses Next.js native <Link> and usePathname() for instant client-side routing.
+ *  - Preserves exact visual design, color tokens, animations, and responsive drawer behavior.
+ *  - Fully backward compatible: auto-derives nav items and notifications if not passed.
  */
 
 import React, { useState } from 'react';
-import { User } from '../../types';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import Header from '../common/Header';
 import { X, Download } from 'lucide-react';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../hooks/useNotifications';
+import { getNavItemsForUser } from './navConfig';
 
 export interface NavItemType {
   id: string;
   label: string;
   icon: React.ElementType;
+  href?: string;
   badge?: number;
   hide?: boolean;
 }
 
 interface DashboardLayoutProps {
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
-  navItems: NavItemType[];
+  activeTab?: string;
+  onTabChange?: (tabId: string) => void;
+  navItems?: NavItemType[];
   children: React.ReactNode;
-  headerProps: {
+  headerProps?: {
     unreadCount: number;
     notifications: any[];
     onNotificationClick: () => void;
@@ -37,12 +43,33 @@ interface DashboardLayoutProps {
   };
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, onTabChange, navItems, children, headerProps }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({
+  activeTab,
+  onTabChange,
+  navItems: customNavItems,
+  children,
+  headerProps: customHeaderProps,
+}) => {
   const { user, logout } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { isInstalled, installApp } = usePWAInstall();
 
+  // Auto-wire notifications if not provided explicitly
+  const defaultNotifications = useNotifications(user!, activeTab || pathname || 'dashboard');
+  const headerProps = customHeaderProps || {
+    unreadCount: defaultNotifications.unreadCount,
+    notifications: defaultNotifications.notifications,
+    onNotificationClick: () => router.push('/messages'),
+    onMarkAsRead: defaultNotifications.markAsRead,
+    onDismiss: defaultNotifications.dismissNotification,
+    onClearAll: defaultNotifications.clearAll,
+  };
+
   if (!user) return null;
+
+  const navItems = customNavItems || getNavItemsForUser(user);
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
@@ -53,28 +80,43 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, onTabChang
   const NavItem = ({ item }: { item: NavItemType }) => {
     if (item.hide) return null;
     const Icon = item.icon;
-    const isActive = activeTab === item.id;
+    const href = item.href || (item.id === 'dashboard' ? '/dashboard' : `/${item.id}`);
+    
+    // Check if active by tab or pathname
+    const isActive = activeTab
+      ? activeTab === item.id
+      : (pathname === href || (href !== '/dashboard' && pathname?.startsWith(href)));
+
     return (
-      <button
+      <Link
+        href={href}
         onClick={() => {
-          onTabChange(item.id);
+          if (onTabChange) onTabChange(item.id);
           setIsDrawerOpen(false);
         }}
-        className={`flex items-center justify-between px-4 py-3 rounded-lg font-medium transition-all duration-200 w-full text-left mb-1 group ${isActive
-          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
-          }`}
+        className={`flex items-center justify-between px-4 py-3 rounded-lg font-medium transition-all duration-200 w-full text-left mb-1 group ${
+          isActive
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+            : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'
+        }`}
       >
         <div className="flex items-center space-x-3">
-          <Icon size={20} className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 transition-colors'} />
+          <Icon
+            size={20}
+            className={isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 transition-colors'}
+          />
           <span>{item.label}</span>
         </div>
         {item.badge && item.badge > 0 && (
-          <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${isActive ? 'bg-white text-indigo-600' : 'bg-red-500 text-white'}`}>
+          <span
+            className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+              isActive ? 'bg-white text-indigo-600' : 'bg-red-500 text-white'
+            }`}
+          >
             {item.badge}
           </span>
         )}
-      </button>
+      </Link>
     );
   };
 
@@ -144,11 +186,15 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, onTabChang
 
         {/* Mobile Drawer */}
         <div
-          className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${isDrawerOpen ? 'bg-black/50 backdrop-blur-sm visible' : 'invisible opacity-0'}`}
+          className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${
+            isDrawerOpen ? 'bg-black/50 backdrop-blur-sm visible' : 'invisible opacity-0'
+          }`}
           onClick={() => setIsDrawerOpen(false)}
         >
           <div
-            className={`fixed top-0 left-0 h-full w-64 bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}`}
+            className={`fixed top-0 left-0 h-full w-64 bg-white shadow-2xl transition-transform duration-300 ease-out flex flex-col ${
+              isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-5 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
@@ -156,7 +202,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, onTabChang
                 <img src="/assets/company-logo.png" alt="Hirush Global Logo" className="h-8 w-auto rounded-lg" />
                 <h2 className="font-bold text-lg text-slate-900">Hirush Global</h2>
               </div>
-              <button onClick={() => setIsDrawerOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -186,4 +235,5 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, onTabChang
     </div>
   );
 };
+
 export default DashboardLayout;
