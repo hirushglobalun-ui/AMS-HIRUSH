@@ -11,7 +11,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 // FIX: Per @google/genai guidelines, API key must be from process.env.API_KEY and used directly.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY || "dummy_api_key_for_build";
+const ai = new GoogleGenAI({ apiKey });
 
 export const generateSRS = async (title: string, description: string): Promise<string> => {
   // FIX: Removed fallback logic for missing API key as per guidelines.

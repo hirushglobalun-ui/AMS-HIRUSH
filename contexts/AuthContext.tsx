@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * File: AuthContext.tsx
  * Purpose: Provides a secure, centralized authentication state across the app.
@@ -33,6 +35,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Pre-hydrate user session from storage for instant UI rendering
     const [user, setUser] = useState<User | null>(() => {
+        if (typeof window === 'undefined') return null;
         try {
             const cached = sessionStorage.getItem('ams_user_session');
             return cached ? JSON.parse(cached) : null;
@@ -41,6 +44,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     });
     const [loading, setLoading] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return true;
         try {
             return !sessionStorage.getItem('ams_user_session');
         } catch {
