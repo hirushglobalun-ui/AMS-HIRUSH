@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * File: AdminDashboard.tsx
  * Purpose: Administrator dashboard container
@@ -24,11 +26,15 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout, { NavItemType } from '../layout/DashboardLayout';
 
-type AdminTab = 'dashboard' | 'attendance' | 'leave' | 'users' | 'biometrics' | 'messages' | 'profile' | 'settings' | 'holidays' | 'leads' | 'domains';
+export type AdminTab = 'dashboard' | 'attendance' | 'leave' | 'users' | 'biometrics' | 'messages' | 'profile' | 'settings' | 'holidays' | 'leads' | 'domains';
 
-const AdminDashboard: React.FC = () => {
+export interface AdminDashboardProps {
+  initialTab?: AdminTab;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'dashboard' }) => {
   const { user: admin } = useAuth();
-  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<AdminTab>(initialTab);
   const { notifications, unreadCount, markAsRead, dismissNotification, clearAll } = useNotifications(admin!, activeTab);
 
   if (!admin) return null;

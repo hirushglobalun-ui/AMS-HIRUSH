@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * File: UserDashboard.tsx
  * Purpose: Employee dashboard container
@@ -20,11 +22,15 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout, { NavItemType } from '../layout/DashboardLayout';
 
-type UserTab = 'dashboard' | 'attendance' | 'leave' | 'profile' | 'crm' | 'domains';
+export type UserTab = 'dashboard' | 'attendance' | 'leave' | 'profile' | 'crm' | 'domains';
 
-const UserDashboard: React.FC = () => {
+export interface UserDashboardProps {
+  initialTab?: UserTab;
+}
+
+const UserDashboard: React.FC<UserDashboardProps> = ({ initialTab = 'dashboard' }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<UserTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<UserTab>(initialTab);
   const { notifications, unreadCount, markAsRead, dismissNotification, clearAll } = useNotifications(user!, activeTab);
 
   if (!user) return null;

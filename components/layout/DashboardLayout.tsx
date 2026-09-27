@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * File: DashboardLayout.tsx
  * Purpose: Centralized layout wrapper for all dashboards to eliminate UI code duplication.

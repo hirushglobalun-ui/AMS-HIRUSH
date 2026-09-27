@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * File: HRDashboard.tsx
  * Purpose: Human Resources dashboard container
@@ -22,11 +24,15 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { useAuth } from '../../contexts/AuthContext';
 import DashboardLayout, { NavItemType } from '../layout/DashboardLayout';
 
-type HRTab = 'dashboard' | 'attendance' | 'leave' | 'users' | 'biometrics' | 'messages' | 'profile' | 'holidays' | 'domains';
+export type HRTab = 'dashboard' | 'attendance' | 'leave' | 'users' | 'biometrics' | 'messages' | 'profile' | 'holidays' | 'domains';
 
-const HRDashboard: React.FC = () => {
+export interface HRDashboardProps {
+  initialTab?: HRTab;
+}
+
+const HRDashboard: React.FC<HRDashboardProps> = ({ initialTab = 'dashboard' }) => {
   const { user: hrUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<HRTab>('dashboard');
+  const [activeTab, setActiveTab] = useState<HRTab>(initialTab);
   const { notifications, unreadCount, markAsRead, dismissNotification, clearAll } = useNotifications(hrUser!, activeTab);
 
   if (!hrUser) return null;

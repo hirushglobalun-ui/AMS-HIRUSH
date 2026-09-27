@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file Modal.tsx
  * @description React component for rendering Modal UI.

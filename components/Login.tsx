@@ -1,4 +1,4 @@
-
+"use client";
 
 /**
  * File: Login.tsx

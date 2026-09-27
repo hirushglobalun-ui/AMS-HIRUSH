@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file FirstTimeSetup.tsx
  * @description React component for rendering FirstTimeSetup UI.

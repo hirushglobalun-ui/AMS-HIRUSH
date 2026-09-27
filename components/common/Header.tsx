@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file Header.tsx
  * @description React component for rendering Header UI.
