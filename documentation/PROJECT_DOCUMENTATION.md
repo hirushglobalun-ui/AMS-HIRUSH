@@ -24,7 +24,7 @@ Hirush Global AMS is an enterprise-grade Attendance and Enterprise Management Sy
 3. **GPS Geofencing & Work From Home (WFH):** Haversine spherical distance calculations determine if an employee is physically located within the office perimeter. Includes department-based bypass rules (e.g. Media/Developers) and explicit WFH request submissions.
 4. **Leave Management Engine:** Automated leave balance deductions, multi-day and half-day duration support, automatic exclusion of Sundays and public holidays from deductions, and protection against deducting days on which the employee physically worked.
 5. **B2B Lead Management CRM:** Comprehensive sales pipeline tracking (Pending, Ongoing, Completed, On Hold, Proposal Sent, Disposed), activity logs (Tasks, Calls, Meetings, Emails, Notes), Google Sheets real-time webhook sync, and Excel/CSV bulk import/export.
-6. **Domain & Hosting Health Monitor:** Tracks domain expirations, runs automated DNS and SSL validity checks, generates preformatted WhatsApp notifications, and automates email alerts via EmailJS.
+6. **Domain & Hosting Health Monitor:** Tracks domain expirations, runs automated DNS and SSL validity checks, generates preformatted WhatsApp notifications, and automates email alerts via Nodemailer Gmail SMTP (`/api/send-domain-alert`).
 7. **Digital ID Card Issuance:** Client-side vector rendering of employee badges with company branding, employee details, and dynamic QR verification codes, exportable as high-resolution PNGs via `html2canvas`.
 8. **Progressive Web App (PWA):** Offline asset caching, service worker lifecycle management, and standalone installation prompts for mobile and desktop environments.
 
@@ -353,7 +353,7 @@ ams/
 |  - Firebase Authentication: Primary + Secondary apps for non-destructive user creation|
 |  - Platform Biometric Sensor: Windows Hello, Apple Touch ID/Face ID, Android Sensors   |
 |  - Device Geolocation: navigator.geolocation GPS coordinate validation                |
-|  - External APIs: EmailJS, WhatsApp URL Scheme, Vercel Blob, Google Sheets Webhook    |
+|  - External APIs: Nodemailer (Gmail SMTP), WhatsApp URL Scheme, Cloudinary, Google Sheets Webhook |
 +---------------------------------------------------------------------------------------+
 ```
 
@@ -715,7 +715,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
     - **Expiring Soon:** <= 30 days remaining.
     - **Expired:** <= 0 days remaining.
   - Generates preformatted WhatsApp URL scheme (`https://api.whatsapp.com/send?phone=...&text=...`) for instant client warning dispatch.
-  - Triggers automated reminder emails via EmailJS.
+  - Triggers automated reminder emails via Nodemailer Gmail SMTP (`/api/send-domain-alert`).
 
 ---
 
