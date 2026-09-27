@@ -25,14 +25,15 @@ The application uses standard Next.js environment variable conventions:
 | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Public (Client) | Yes | FCM Messaging Sender ID | `100000000000` |
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | Public (Client) | Yes | Firebase Web Application ID | `1:100000000000:web:abcdef` |
 | `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | Public (Client) | No | Google Analytics Measurement ID | `G-XXXXXXXXXX` |
-| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Public (Client) | No | EmailJS Account Public Key | `user_abcdef12345` |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | Public (Client) | No | EmailJS Service Identifier | `service_ams` |
-| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Public (Client) | No | EmailJS Template Identifier | `template_domain_alert` |
-| `BLOB_READ_WRITE_TOKEN` | Server / Client | No | Vercel Blob Storage Token | `vercel_blob_rw_...` |
+| `CLOUDINARY_CLOUD_NAME` | Server / API | Yes | Cloudinary Cloud Name (Server upload) | `my-cloud` |
+| `CLOUDINARY_API_KEY` | Server / API | Yes | Cloudinary API Key | `1234567890` |
+| `CLOUDINARY_API_SECRET` | Server / API | Yes | Cloudinary API Secret | `abcdef12345` |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Public (Client) | No | Cloudinary Cloud Name (Client fallback) | `my-cloud` |
+| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET`| Public (Client) | No | Unsigned Upload Preset for direct client upload | `ams_preset` |
+| `GMAIL_USER` | Server / Script | Yes | Gmail username for Nodemailer alerts | `user@gmail.com` |
+| `GMAIL_APP_PASS` | Server / Script | Yes | Gmail app password for Nodemailer alerts | `xxxx xxxx xxxx xxxx` |
+| `ALERT_TO_EMAIL` | Server / Script | No | Recipient email for domain health alerts | `admin@hirush.com` |
 | `GEMINI_API_KEY` | Server / Client | No | Google Gemini API Key | `AIzaSy...` |
-| `GMAIL_USER` | Server / Script | No | Gmail username for domain checker | `user@gmail.com` |
-| `GMAIL_APP_PASS` | Server / Script | No | Gmail app password for domain checker | `xxxx xxxx xxxx xxxx` |
-
 
 ---
 
@@ -53,16 +54,24 @@ NEXT_PUBLIC_FIREBASE_APP_ID=1:100000000000:web:abcdef123456
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 
 # =================================================================
-# EMAILJS CONFIGURATION (For Domain Expiry Alerts)
+# CLOUDINARY CONFIGURATION (For Photos & Document Management)
 # =================================================================
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_emailjs_public_key
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_emailjs_service_id
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_emailjs_template_id
+# Option A: Server-Side API upload (/api/upload - Recommended)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# Option B: Client-Side Direct Unsigned Upload
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 
 # =================================================================
-# VERCEL BLOB STORAGE (For Document & Receipt Uploads)
+# NODEMAILER GMAIL SMTP (For Domain & System Email Alerts)
 # =================================================================
-BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
+GMAIL_USER=hirushglobalun@gmail.com
+GMAIL_APP_PASS=tosf dpji mlfh vxem
+ALERT_TO_EMAIL=hirushglobalun@gmail.com
+```
 
 # =================================================================
 # GOOGLE GEMINI AI SDK (For AI SRS Document Generation)

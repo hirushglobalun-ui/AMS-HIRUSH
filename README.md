@@ -33,7 +33,7 @@ A comprehensive, full-stack Employee and Enterprise Management System developed 
 - **Hosting:** Vercel / Firebase Hosting / Node.js
 - **Charts & Visualization:** Recharts
 - **Data Export & Import:** SheetJS (`xlsx`), PapaParse, `html2canvas`
-- **Integrations:** EmailJS, Google GenAI SDK (`@google/genai`), Vercel Blob Storage
+- **Integrations:** Cloudinary, Nodemailer, Google GenAI SDK (`@google/genai`)
 
 ---
 

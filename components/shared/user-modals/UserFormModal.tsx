@@ -13,7 +13,7 @@ import { db, secondaryAuth } from '../../../firebase';
 import { collection, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { User, Role, UserStatus } from '../../../types';
-import { uploadToBlob } from '../../../services/blobService';
+import { uploadToCloudinary } from '../../../services/cloudinaryService';
 import { logAuditEvent, AuditActionType } from '../../../services/auditService';
 import FormInput from '../../common/FormInput';
 import DocumentUploadField from '../../common/DocumentUploadField';
@@ -71,14 +71,23 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
         });
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, profilePhoto: reader.result as string }));
-            };
-            reader.readAsDataURL(file);
+            const toastId = toast.loading("Uploading photo to Cloudinary...");
+            try {
+                const url = await uploadToCloudinary(file, 'ams_profiles');
+                setFormData(prev => ({ ...prev, profilePhoto: url }));
+                toast.success("Photo uploaded to Cloudinary successfully!", { id: toastId });
+            } catch (err: any) {
+                console.warn("Cloudinary photo upload failed, using local preview fallback:", err);
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormData(prev => ({ ...prev, profilePhoto: reader.result as string }));
+                };
+                reader.readAsDataURL(file);
+                toast.error(`Cloudinary: ${err?.message || 'Upload failed'}. Preview saved.`, { id: toastId });
+            }
         }
     };
 
@@ -86,17 +95,15 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             setUploadingDocs(prev => ({ ...prev, [fieldName]: true }));
+            const toastId = toast.loading("Uploading document to Cloudinary...");
 
             try {
-                const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                const filename = `user-docs/${Date.now()}-${cleanName}`;
-                const url = await uploadToBlob(file, filename);
-
+                const url = await uploadToCloudinary(file, 'ams_documents');
                 setFormData(prev => ({ ...prev, [fieldName]: url }));
-                toast.success("Document uploaded successfully!");
-            } catch (error) {
+                toast.success("Document uploaded to Cloudinary successfully!", { id: toastId });
+            } catch (error: any) {
                 console.error(`Error uploading ${fieldName}:`, error);
-                toast.error("Failed to upload document. Please try again.");
+                toast.error(`Cloudinary: ${error?.message || "Failed to upload document."}`, { id: toastId });
             } finally {
                 setUploadingDocs(prev => ({ ...prev, [fieldName]: false }));
                 e.target.value = '';

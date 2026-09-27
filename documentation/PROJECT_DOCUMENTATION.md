@@ -43,11 +43,11 @@ HIRUSH GLOBAL AMS TECHNOLOGY STACK
 ├── Cloud Administration: Firebase Admin 14.3.0
 ├── Hardware & Sensors: WebAuthn (FIDO2 / navigator.credentials), Browser Geolocation API
 ├── Mapping & GIS: Leaflet 1.9.4, React-Leaflet 5.0.0
-├── Storage & Uploads: @vercel/blob 2.0.0
+├── Storage & Uploads: Cloudinary 2.9.0
 ├── Data & Reports: SheetJS (xlsx 0.18.5), PapaParse 5.5.4
 ├── Image Generation: html2canvas 1.4.1
 ├── AI & Documents: Google GenAI SDK (@google/genai 1.27.0)
-├── Messaging & Alerts: @emailjs/browser 4.4.1, Nodemailer 10.0.1
+├── Messaging & Alerts: Nodemailer 10.0.1 (Gmail SMTP)
 ├── Charts & KPIs: Recharts 3.8.1
 ├── UI Feedback: react-hot-toast 2.6.0
 └── Test Suite: tsx 4.19.3, Node.js Native Test Runner (node:test, node:assert)
@@ -94,6 +94,9 @@ ams/
 │   ├── globals.css                          # App-wide styles
 │   ├── layout.tsx                           # Master HTML & AuthProvider shell
 │   ├── page.tsx                             # Root landing / role-aware router
+│   ├── api/                                 # API Routes
+│   │   ├── send-domain-alert/route.ts       # Nodemailer domain alert dispatcher
+│   │   └── upload/route.ts                  # Cloudinary server-side upload endpoint
 │   ├── attendance/                          # Attendance route
 │   │   └── page.tsx                         # /attendance
 │   ├── biometrics/                          # Biometrics management route
@@ -266,7 +269,7 @@ ams/
 │
 ├── services/                                # Business Logic & External Services
 │   ├── auditService.ts                      # Immutable audit logging to Firestore
-│   ├── blobService.ts                       # Document uploads via Vercel Blob
+│   ├── cloudinaryService.ts                 # Photo & document uploads via Cloudinary
 │   ├── crmService.ts                        # Lead CRUD & Google Sheets webhook sync
 │   ├── dataService.ts                       # Paginated Firestore operations
 │   ├── exportService.ts                     # Excel/CSV generation via SheetJS
@@ -612,7 +615,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | `services/dataService.ts` | 466 | Centralized Firestore data layer: paginated queries, user operations, attendance batch writes, leave mutations. |
 | `services/crmService.ts` | 397 | CRM operations: lead CRUD, lead activity logging, and asynchronous Google Sheets webhook dispatch. |
 | `services/auditService.ts` | 38 | Immutable audit logger writing system actions (`LOGIN`, `LOGOUT`, `UPDATE_SETTINGS`, etc.) to `/audit_logs`. |
-| `services/blobService.ts` | 44 | Client/Server integration with Vercel Blob storage for document uploads and receipt attachments. |
+| `services/cloudinaryService.ts` | 65 | Cloudinary integration: handles photo and document uploads with server API and client-preset fallback. |
 | `services/exportService.ts` | 40 | Spreadsheet generation: converts JSON arrays into downloadable Excel (`.xlsx`) or CSV files via SheetJS. |
 | `services/geminiService.ts` | 76 | AI document synthesis: interfaces with Google GenAI SDK (`@google/genai`) to generate SRS specifications. |
 

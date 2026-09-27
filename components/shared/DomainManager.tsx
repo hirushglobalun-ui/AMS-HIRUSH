@@ -88,30 +88,29 @@ const DomainManager: React.FC = () => {
   };
 
   const testEmailAlert = async (domain: ConsolidatedDomain) => {
-    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
-    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
-    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
-
-    if (!publicKey || !serviceId || !templateId) {
-      toast.error('EmailJS credentials are not configured in your .env file!');
-      return;
-    }
-
-    const toastId = toast.loading(`Sending test email for ${domain.projectName}...`);
+    const toastId = toast.loading(`Sending email alert for ${domain.projectName}...`);
     try {
-      const emailjs = await import('@emailjs/browser');
-      emailjs.init(publicKey);
-      await emailjs.send(serviceId, templateId, {
-        project_name: domain.projectName,
-        domain_url: domain.domainDetail,
-        expiry_date: domain.expiryDate || 'N/A',
-        dns_status: domain.dnsStatus || 'Healthy',
-        ssl_status: domain.sslStatus || 'Healthy',
-        error_details: domain.healthError || 'None',
-        alert_reason: 'Manual test triggered from Domain Manager',
-        to_email: 'hirushglobalun@gmail.com',
+      const res = await fetch('/api/send-domain-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectName: domain.projectName,
+          domainDetail: domain.domainDetail,
+          expiryDate: domain.expiryDate || 'N/A',
+          dnsStatus: domain.dnsStatus || 'Healthy',
+          sslStatus: domain.sslStatus || 'Healthy',
+          healthError: domain.healthError || '',
+          alertReason: 'Manual status check dispatched from Domain Manager',
+          toEmail: 'hirushglobalun@gmail.com',
+        })
       });
-      toast.success(`Test email sent successfully for ${domain.projectName}!`, { id: toastId });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to dispatch email');
+      }
+
+      toast.success(`Alert email sent via Nodemailer for ${domain.projectName}!`, { id: toastId });
     } catch (err: any) {
       toast.error(`Failed to send email: ${err?.message || 'Unknown error'}`, { id: toastId });
     }

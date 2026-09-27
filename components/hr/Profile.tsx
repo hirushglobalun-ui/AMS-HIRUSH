@@ -16,6 +16,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { uploadToCloudinary } from '../../services/cloudinaryService';
 
 const Profile: React.FC = () => {
   const { user: admin } = useAuth();
@@ -40,14 +41,23 @@ const Profile: React.FC = () => {
     setPasswords(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, profilePhoto: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      const toastId = toast.loading("Uploading photo to Cloudinary...");
+      try {
+        const url = await uploadToCloudinary(file, 'ams_profiles');
+        setFormData(prev => ({ ...prev, profilePhoto: url }));
+        toast.success("Photo uploaded to Cloudinary successfully!", { id: toastId });
+      } catch (err: any) {
+        console.warn("Cloudinary photo upload failed, using local preview fallback:", err);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, profilePhoto: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
+        toast.error(`Cloudinary: ${err?.message || 'Upload failed'}. Preview saved.`, { id: toastId });
+      }
     }
   };
 
