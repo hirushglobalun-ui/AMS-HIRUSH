@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file PWAInstallPrompt.tsx
  * @description React component for rendering PWAInstallPrompt UI.

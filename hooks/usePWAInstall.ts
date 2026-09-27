@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file usePWAInstall.ts
  * @description Provides logic and utilities for usePWAInstall.
