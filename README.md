@@ -37,16 +37,18 @@ A comprehensive, full-stack Employee and Enterprise Management System developed 
 
 ---
 
-## 📚 Migration & Technical Documentation
+## 📚 Documentation Suite
 
-Detailed architecture, environment configuration, route mapping, and testing documentation are available:
+All detailed system, architecture, environment, and verification documentation is consolidated in the [`documentation/`](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation) directory:
 
-* 📋 [MIGRATION_AUDIT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/MIGRATION_AUDIT.md) — Comprehensive technical audit of architecture, dependencies, and risks.
-* 🗺️ [ROUTE_MIGRATION.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/ROUTE_MIGRATION.md) — Mapping from Vite SPA tabs to Next.js App Router paths.
-* 🏛️ [ARCHITECTURE.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/ARCHITECTURE.md) — Server vs. Client component boundaries, WebAuthn, Leaflet, and PWA setup.
-* 🔐 [ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/ENVIRONMENT.md) — Environment variables matrix (`NEXT_PUBLIC_*` and legacy `VITE_*` fallbacks).
-* 🚢 [DEPLOYMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/DEPLOYMENT.md) — Deployment instructions for Vercel, Node.js, and Firebase.
-* 🧪 [TESTING.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/TESTING.md) — Full regression test suite covering all 28 requirements.
+* 📖 [documentation/INDEX.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/INDEX.md) — Master Documentation Directory & Navigation Index.
+* 📑 [documentation/PROJECT_DOCUMENTATION.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/PROJECT_DOCUMENTATION.md) — Master System Reference (800+ lines, visual code tree, complete component inventory & line counts).
+* 📋 [documentation/MIGRATION_AUDIT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/MIGRATION_AUDIT.md) — Comprehensive technical audit of architecture, dependencies, security, and cleanup.
+* 🗺️ [documentation/ROUTE_MIGRATION.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/ROUTE_MIGRATION.md) — App Router route catalog and RBAC access matrix.
+* 🏛️ [documentation/ARCHITECTURE.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/ARCHITECTURE.md) — Server vs. Client component boundaries, WebAuthn, Leaflet, and PWA setup.
+* 🔐 [documentation/ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/ENVIRONMENT.md) — Environment variables matrix (`NEXT_PUBLIC_*`).
+* 🚢 [documentation/DEPLOYMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/DEPLOYMENT.md) — Production hosting deployment instructions (Vercel, Node.js, Firebase).
+* 🧪 [documentation/TESTING.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/TESTING.md) — Full automated quality gate results (tests, tsc, lint, build, live routes).
 
 ---
 

@@ -59,11 +59,9 @@ HIRUSH GLOBAL AMS TECHNOLOGY STACK
 
 ```text
 ams/
+├── .env.example                             # Environment variable template
 ├── .firebaserc                              # Firebase project environment mapping
 ├── .gitignore                               # Git ignored paths and build artifacts
-├── ARCHITECTURE.md                          # Framework architecture documentation
-├── DEPLOYMENT.md                            # Production deployment procedures
-├── ENVIRONMENT.md                           # Environment variables matrix
 ├── eslint.config.js                         # ESLint 9 configuration
 ├── firebase.json                            # Firebase rules & hosting setup
 ├── firebase.ts                              # Firebase Client SDK initialization
@@ -71,20 +69,26 @@ ams/
 ├── global.d.ts                              # Ambient TypeScript declarations
 ├── index.css                                # Global Tailwind CSS base & utilities
 ├── metadata.json                            # System metadata
-├── MIGRATION_AUDIT.md                       # Vite-to-Next.js migration log
 ├── next.config.mjs                          # Next.js configuration
 ├── next-env.d.ts                            # Next.js type declarations
 ├── package.json                             # NPM scripts and dependencies
 ├── package-lock.json                        # Locked dependencies tree
 ├── postcss.config.js                        # PostCSS configuration
-├── PROJECT_DOCUMENTATION.md                 # Complete project manual & catalog
 ├── README.md                                # Project summary & quickstart
-├── ROUTE_MIGRATION.md                       # Next.js route mapping guide
 ├── setup-windows-scheduler.bat              # Task scheduler batch script
 ├── tailwind.config.js                       # Tailwind CSS color tokens & theme
-├── TESTING.md                               # Regression and unit testing guide
 ├── tsconfig.json                            # TypeScript configuration
 ├── types.ts                                 # Global TypeScript types & enums
+│
+├── documentation/                           # Master Documentation Suite
+│   ├── INDEX.md                             # Documentation index & reading paths
+│   ├── PROJECT_DOCUMENTATION.md             # Complete project manual & catalog (this document)
+│   ├── ARCHITECTURE.md                      # Framework architecture & SSR hydration guide
+│   ├── ROUTE_MIGRATION.md                   # App Router route mapping & RBAC matrix
+│   ├── MIGRATION_AUDIT.md                   # Vite-to-Next.js migration log & handover audit
+│   ├── ENVIRONMENT.md                       # Environment variables configuration matrix
+│   ├── TESTING.md                           # Automated test suite & quality gate records
+│   └── DEPLOYMENT.md                        # Production hosting deployment playbook
 │
 ├── app/                                     # Next.js Native App Router
 │   ├── globals.css                          # App-wide styles
@@ -643,6 +647,21 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | `functions/src/index.ts` | 258 | Firebase Cloud Functions: daily cron jobs for auto-checkout, domain health checks, and notifications. |
 | `functions/package.json` | 28 | Node.js package definition for Firebase Cloud Functions. |
 | `functions/tsconfig.json` | 18 | TypeScript configuration for Cloud Functions backend. |
+
+---
+
+### 3.13. Centralized Documentation Suite (`documentation/`)
+
+| File Path | Lines | Purpose / Responsibility |
+| :--- | :---: | :--- |
+| `documentation/INDEX.md` | 55 | Master documentation index, reading paths, and overview. |
+| `documentation/PROJECT_DOCUMENTATION.md` | ~830 | Complete project technical manual, file catalog, and architectural blueprint. |
+| `documentation/ARCHITECTURE.md` | 137 | Server/Client component boundaries, WebAuthn, Leaflet, and PWA architecture. |
+| `documentation/ROUTE_MIGRATION.md` | 60 | Next.js App Router route mapping catalog and RBAC access matrix. |
+| `documentation/MIGRATION_AUDIT.md` | 265 | Technical migration audit log and final production readiness sign-off. |
+| `documentation/ENVIRONMENT.md` | 98 | Environment variables configuration matrix and `.env` setup. |
+| `documentation/TESTING.md` | 170 | Four-tier automated quality gate matrix, unit test suite, and route verification. |
+| `documentation/DEPLOYMENT.md` | 129 | Production deployment playbook for Vercel, Node.js, and Firebase. |
 
 ---
 

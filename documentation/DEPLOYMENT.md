@@ -53,7 +53,7 @@ Vercel provides native, zero-configuration hosting for Next.js App Router applic
    - **Build Command:** `npm run build`
    - **Output Directory:** `.next`
    - **Install Command:** `npm install`
-3. In **Settings → Environment Variables**, add your configuration variables (e.g. `NEXT_PUBLIC_FIREBASE_API_KEY`, etc. as documented in [ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/ENVIRONMENT.md)).
+3. In **Settings → Environment Variables**, add your configuration variables (e.g. `NEXT_PUBLIC_FIREBASE_API_KEY`, etc. as documented in [ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/ENVIRONMENT.md)).
 4. Deploy to a Preview / Staging URL.
 5. Verify workflows and promote to the production domain.
 
