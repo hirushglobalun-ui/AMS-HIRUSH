@@ -16,6 +16,10 @@ interface IDCardProps {
 }
 
 const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ user }, ref) => {
+  const logoSrc = typeof companyLogo === 'object' && companyLogo && 'src' in (companyLogo as any)
+    ? (companyLogo as any).src
+    : (companyLogo || '/assets/company-logo.png');
+
   return (
     <div
       ref={ref}
@@ -28,7 +32,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ user }, ref) => {
         <div className="relative z-10 flex items-center justify-between px-6 pt-6">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-white rounded-lg p-1.5 shadow-sm">
-              <img src={companyLogo} alt="Logo" className="w-full h-full object-contain" />
+              <img src={logoSrc} alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-white text-sm tracking-widest uppercase leading-none">Hirush</span>
