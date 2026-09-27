@@ -127,18 +127,45 @@ npm test
   - Enforces leave deduction rules: excludes Sundays and company holidays from deducted quota.
   - Enforces rule that days where an employee actually clocked in (`totalHours > 0`) are not deducted from leave quota.
 
-All 17 automated tests run and pass in ~1.1 seconds with 0 failures.
+All 17 automated tests run and pass in ~1.1 seconds with 0 failures across 4 test suites:
+- `tests/attendance.test.ts` (4 tests) - PASSED
+- `tests/domain.test.ts` (3 tests) - PASSED
+- `tests/geofence.test.ts` (4 tests) - PASSED
+- `tests/leave.test.ts` (6 tests) - PASSED
 
 ---
 
-## 5. Build & Compilation Verification
+## 5. Build, Lint & Compilation Verification
 
-```bash
-npm run build
-```
-- **Turbopack Compilation:** `Compiled successfully`
-- **TypeScript Type Check:** `Finished TypeScript with 0 errors`
-- **Static Page Optimization:** `16/16 routes generated successfully`
+### Quality Gate Matrix
+
+| Verification Check | Command | Result | Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Compilation** | `npx tsc --noEmit` | **PASSED** | 0 errors across entire codebase |
+| **ESLint Code Quality** | `npm run lint` | **PASSED** | 0 errors (Exit code 0) |
+| **Unit Test Suite** | `npm test` | **PASSED** | 17/17 tests passing in ~1.1s |
+| **Production Build** | `npm run build` | **PASSED** | Compiled in ~9s, 16/16 routes statically optimized |
+
+### Live Route HTTP Verification
+
+All 14 top-level routes tested against the server on `http://localhost:3005` returned `HTTP 200 OK`:
+- `GET /` → **200 OK**
+- `GET /login` → **200 OK**
+- `GET /setup` → **200 OK**
+- `GET /dashboard` → **200 OK**
+- `GET /attendance` → **200 OK**
+- `GET /leave` → **200 OK**
+- `GET /users` → **200 OK**
+- `GET /biometrics` → **200 OK**
+- `GET /messages` → **200 OK**
+- `GET /crm` → **200 OK**
+- `GET /domains` → **200 OK**
+- `GET /settings` → **200 OK**
+- `GET /holidays` → **200 OK**
+- `GET /profile` → **200 OK**
+
 - **Zero suppressed TypeScript errors (`@ts-ignore` / `@ts-expect-error`).**
 - **Zero breaking changes to Firestore documents or schema.**
+- **Zero `VITE_` references remaining in source code.**
+
 

@@ -8,30 +8,31 @@
 
 Next.js separates environment variables between client-exposed variables (`NEXT_PUBLIC_*`) and server-only variables.
 
-To guarantee zero disruption during the migration from Vite to Next.js, the codebase has been structured with **bidirectional compatibility**:
-* The system checks `NEXT_PUBLIC_*` first (Next.js standard).
-* If missing, it transparently falls back to `VITE_*` (legacy Vite standard) or `process.env.*`.
-
-Existing `.env` files can be used directly or updated to the `NEXT_PUBLIC_*` convention.
+The application uses standard Next.js environment variable conventions:
+* Client-accessible keys use the `NEXT_PUBLIC_*` prefix.
+* Server-only keys (e.g. `GEMINI_API_KEY`, `BLOB_READ_WRITE_TOKEN`, `GMAIL_APP_PASS`) are protected from browser exposure.
 
 ---
 
 ## 2. Environment Variables Matrix
 
-| Variable Name (Recommended) | Legacy Variable Name | Scope | Required | Description | Example / Format |
-| :--- | :--- | :--- | :---: | :--- | :--- |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | `VITE_FIREBASE_API_KEY` | Public (Client) | Yes | Firebase Web Client API Key | `AIzaSy...` |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `VITE_FIREBASE_AUTH_DOMAIN` | Public (Client) | Yes | Firebase Authentication Domain | `hirush-ams.firebaseapp.com` |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | `VITE_FIREBASE_PROJECT_ID` | Public (Client) | Yes | Firebase Cloud Project ID | `hirush-global-ams` |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | `VITE_FIREBASE_STORAGE_BUCKET` | Public (Client) | Yes | Cloud Storage Bucket Name | `hirush-ams.appspot.com` |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Public (Client) | Yes | FCM Messaging Sender ID | `123456789012` |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | `VITE_FIREBASE_APP_ID` | Public (Client) | Yes | Firebase Web Application ID | `1:123456789:web:abcdef` |
-| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | `VITE_FIREBASE_MEASUREMENT_ID` | Public (Client) | No | Google Analytics Measurement ID | `G-XXXXXXXXXX` |
-| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | `VITE_EMAILJS_PUBLIC_KEY` | Public (Client) | No | EmailJS Account Public Key | `user_abcdef12345` |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | `VITE_EMAILJS_SERVICE_ID` | Public (Client) | No | EmailJS Service Identifier | `service_ams` |
-| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | `VITE_EMAILJS_TEMPLATE_ID` | Public (Client) | No | EmailJS Template Identifier | `template_domain_alert` |
-| `BLOB_READ_WRITE_TOKEN` | `VITE_BLOB_READ_WRITE_TOKEN` | Server / Client | No | Vercel Blob Storage Token | `vercel_blob_rw_...` |
-| `GEMINI_API_KEY` | `API_KEY` | Server / Client | No | Google Gemini API Key | `AIzaSy...` |
+| Variable Name | Scope | Required | Description | Example / Format |
+| :--- | :--- | :---: | :--- | :--- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Public (Client) | Yes | Firebase Web Client API Key | `AIzaSy...` |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Public (Client) | Yes | Firebase Authentication Domain | `hirush-global-ams.firebaseapp.com` |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Public (Client) | Yes | Firebase Cloud Project ID | `hirush-global-ams` |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Public (Client) | Yes | Cloud Storage Bucket Name | `hirush-global-ams.appspot.com` |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Public (Client) | Yes | FCM Messaging Sender ID | `100000000000` |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Public (Client) | Yes | Firebase Web Application ID | `1:100000000000:web:abcdef` |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` | Public (Client) | No | Google Analytics Measurement ID | `G-XXXXXXXXXX` |
+| `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | Public (Client) | No | EmailJS Account Public Key | `user_abcdef12345` |
+| `NEXT_PUBLIC_EMAILJS_SERVICE_ID` | Public (Client) | No | EmailJS Service Identifier | `service_ams` |
+| `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID` | Public (Client) | No | EmailJS Template Identifier | `template_domain_alert` |
+| `BLOB_READ_WRITE_TOKEN` | Server / Client | No | Vercel Blob Storage Token | `vercel_blob_rw_...` |
+| `GEMINI_API_KEY` | Server / Client | No | Google Gemini API Key | `AIzaSy...` |
+| `GMAIL_USER` | Server / Script | No | Gmail username for domain checker | `user@gmail.com` |
+| `GMAIL_APP_PASS` | Server / Script | No | Gmail app password for domain checker | `xxxx xxxx xxxx xxxx` |
+
 
 ---
 

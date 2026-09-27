@@ -223,3 +223,41 @@ To improve maintainability, reduce cognitive load, and keep code human-written a
 | **TypeScript Compile (`tsc --noEmit`)** | VERIFIED | 0 errors across entire codebase |
 | **Production Build (`npm run build`)** | VERIFIED | Exit code 0, 16/16 routes statically optimized |
 
+---
+
+## 11. Final Production Readiness, Security & Cleanup Audit
+
+### A. Obsolete SPA File & Script Purge
+During the final production audit, all legacy Single Page Application (SPA) activeTab-switching shells and redundant temporary files were identified and completely removed:
+* **Deleted Legacy Dashboard Switchers:**
+  - `components/admin/AdminDashboard.tsx` (Dead SPA shell; replaced by native routes and `components/admin/Dashboard.tsx`)
+  - `components/hr/HRDashboard.tsx` (Dead SPA shell; replaced by native routes and `components/hr/Dashboard.tsx`)
+  - `components/user/UserDashboard.tsx` (Dead SPA shell; replaced by native routes and `components/user/UserHome.tsx`)
+* **Deleted Redundant Manifest & Guide:**
+  - `public/manifest.webmanifest` (Duplicate of canonical `public/manifest.json`)
+  - `public/pwa-icons-guide.md` (Temporary developer asset guide)
+* **Deleted One-Off Script:**
+  - `scripts/test-fetch.js` (Scratch testing script)
+
+### B. Security Hardening
+* **Zero Hardcoded Credentials:** `scripts/auto-domain-checker.js` previously contained hardcoded Gmail app credentials. These were safely migrated to `process.env.GMAIL_USER` and `process.env.GMAIL_APP_PASS`.
+* **Zero `VITE_` Environment Leftovers:** Full codebase audit verified that all source references now strictly use `NEXT_PUBLIC_FIREBASE_*` and `NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN`. Repository-wide search for `VITE_` in application source code returns **0 matches**.
+
+### C. Tooling & Linting Sanitation
+* **ESLint 9 Flat Config Alignment:** Removed obsolete Vite plugin `eslint-plugin-react-refresh` from `eslint.config.js`. Configured ignores for `.next/**`, `node_modules/**`, `functions/**`, `public/**`, and `scripts/**`. Disabled experimental React 19 compiler advisory rules that flagged standard React patterns.
+* **Package Dependencies:** Relocated `@types/leaflet` and `@types/papaparse` from `dependencies` to `devDependencies`.
+* **Code Cleanliness:** Cleaned minor variable reassignments across modal components.
+* `npm run lint` now completes with **exit code 0 (0 errors)**.
+
+### D. Four-Tier Quality Gate Verification
+All four automated quality gates pass cleanly:
+1. `npx tsc --noEmit` → **0 errors** (Exit code 0)
+2. `npm run lint` → **0 errors** (Exit code 0)
+3. `npm test` → **17/17 tests passing across 4 suites** (Exit code 0)
+4. `npm run build` → **Compiled successfully in ~9s, 16/16 routes statically optimized** (Exit code 0)
+
+### E. Live HTTP Route Verification (Port 3005)
+All 14 top-level routes were verified against the running server and responded with `HTTP 200 OK`:
+`/`, `/login`, `/setup`, `/dashboard`, `/attendance`, `/leave`, `/users`, `/biometrics`, `/messages`, `/crm`, `/domains`, `/settings`, `/holidays`, `/profile`.
+
+

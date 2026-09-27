@@ -27,7 +27,7 @@ export const calculateTotalHours = (sessions: any[], dateStr?: string): number =
       if (session.checkIn && session.checkOut) {
         const datePrefix = dateStr || '1970-01-01';
         const start = new Date(`${datePrefix}T${session.checkIn}`);
-        let end = new Date(`${datePrefix}T${session.checkOut}`);
+        const end = new Date(`${datePrefix}T${session.checkOut}`);
         let diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
         if (diff < 0) diff += 24;
         if (diff > 0) {

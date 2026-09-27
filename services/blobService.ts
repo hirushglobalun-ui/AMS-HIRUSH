@@ -10,8 +10,7 @@ import { put } from '@vercel/blob';
 
 const BLOB_READ_WRITE_TOKEN = 
     process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN || 
-    process.env.BLOB_READ_WRITE_TOKEN || 
-    process.env.VITE_BLOB_READ_WRITE_TOKEN;
+    process.env.BLOB_READ_WRITE_TOKEN;
 
 /**
  * Uploads a file to Vercel Blob storage.

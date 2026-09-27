@@ -140,7 +140,6 @@ ams/
 │   │   └── FirstTimeSetup.tsx               # Super Admin creation wizard
 │   │
 │   ├── admin/                               # Super Admin & Admin Views
-│   │   ├── AdminDashboard.tsx               # Admin shell view router
 │   │   ├── AdminSettings.tsx                # Geofence Leaflet map & bypass config
 │   │   ├── Dashboard.tsx                    # Master executive KPI overview
 │   │   ├── IDCard.tsx                       # Digital ID card renderer & PNG exporter
@@ -176,7 +175,6 @@ ams/
 │   │
 │   ├── hr/                                  # Human Resources Views
 │   │   ├── Dashboard.tsx                    # HR dashboard (attendance, leave queue)
-│   │   ├── HRDashboard.tsx                  # HR shell view router
 │   │   ├── HRSettings.tsx                   # Office boundary settings view
 │   │   ├── ManageMessages.tsx               # HR announcement console
 │   │   ├── ManageUsers.tsx                  # HR team directory management
@@ -188,7 +186,6 @@ ams/
 │   │   ├── Leave.tsx                        # Employee leave hub
 │   │   ├── Messages.tsx                     # Employee notice board & alerts
 │   │   ├── Profile.tsx                      # Employee profile & digital ID badge
-│   │   ├── UserDashboard.tsx                # User shell view router
 │   │   ├── UserHome.tsx                     # Employee home landing
 │   │   │
 │   │   ├── attendance/                      # Employee Attendance Sub-Module
@@ -285,16 +282,13 @@ ams/
 ├── public/                                  # Static Assets & PWA
 │   ├── generate-icons.html                  # Icon generator utility
 │   ├── manifest.json                        # PWA Web App Manifest
-│   ├── manifest.webmanifest                 # Web manifest fallback
 │   ├── pwa-192x192.svg                      # PWA compact icon
 │   ├── pwa-512x512.svg                      # PWA high-res icon
-│   ├── pwa-icons-guide.md                   # PWA icon setup instructions
 │   ├── sw.js                                # Network-First service worker
 │   └── assets/                              # Brand logos and favicons
 │
 ├── scripts/                                 # Operational & Diagnostics Scripts
-│   ├── auto-domain-checker.js               # Scheduled domain DNS/SSL auditor
-│   └── test-fetch.js                        # Network reachability diagnostic
+│   └── auto-domain-checker.js               # Scheduled domain DNS/SSL auditor
 │
 └── functions/                               # Cloud Backend
     ├── package.json                         # Cloud Functions dependencies
@@ -441,7 +435,6 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | File Path | Lines | Purpose / Responsibility |
 | :--- | :---: | :--- |
 | `components/admin/Dashboard.tsx` | 534 | Master administrative executive overview: KPI metric cards, quick actions, attendance chart, leave queue. |
-| `components/admin/AdminDashboard.tsx` | 103 | Admin shell routing active sub-views (Dashboard, Users, Attendance, Leave, CRM, etc.). |
 | `components/admin/AdminSettings.tsx` | 416 | Geofence configuration: Interactive Leaflet map, GPS coordinates, allowed radius (meters), department bypass. |
 | `components/admin/ManageUsers.tsx` | 345 | Team member directory, role assignment, active/inactive toggling, profile inspection. |
 | `components/admin/ManageMessages.tsx` | 417 | Broadcast announcement composer with department targeting and historical message list. |
@@ -485,7 +478,6 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | File Path | Lines | Purpose / Responsibility |
 | :--- | :---: | :--- |
 | `components/hr/Dashboard.tsx` | 390 | HR-tailored executive dashboard: daily attendance overview, leave approvals queue, upcoming birthdays. |
-| `components/hr/HRDashboard.tsx` | 103 | HR shell managing navigation across HR-allowed views. |
 | `components/hr/HRSettings.tsx` | 434 | HR view for reviewing office location boundaries and department bypasses. |
 | `components/hr/ManageUsers.tsx` | 294 | Employee directory management for HR personnel with editing capabilities. |
 | `components/hr/ManageMessages.tsx` | 417 | Announcement broadcast console matching Admin capabilities. |
@@ -497,7 +489,6 @@ Below is the complete, exhaustive catalog of every source file in the repository
 
 | File Path | Lines | Purpose / Responsibility |
 | :--- | :---: | :--- |
-| `components/user/UserDashboard.tsx` | 89 | Employee shell managing UserHome, Attendance, Leave, Profile, and CRM (for Sales). |
 | `components/user/UserHome.tsx` | 115 | Employee home landing: personal status card, clock-in shortcut, announcements, and celebrations. |
 | `components/user/Attendance.tsx` | 186 | Employee attendance hub: live punch clock, geofence status indicator, and timeline logs. |
 | `components/user/Leave.tsx` | 85 | Employee leave center: quota summary cards, new request form, and application history table. |
@@ -647,11 +638,8 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | :--- | :---: | :--- |
 | `public/sw.js` | 80 | Service Worker: Network-First navigation strategy, static asset caching, offline fallback. |
 | `public/manifest.json` | 25 | Progressive Web App manifest defining app name, standalone display, and icon references. |
-| `public/manifest.webmanifest`| 25 | Standard web manifest duplicate for browser compatibility. |
 | `public/generate-icons.html` | 96 | Canvas utility to generate high-resolution PWA icons from vector logos. |
-| `public/pwa-icons-guide.md` | 28 | Documentation guide on PWA icon dimensions and asset requirements. |
 | `scripts/auto-domain-checker.js` | 277 | Node.js scheduled script auditing domain DNS/SSL records and dispatching WhatsApp/Email alerts. |
-| `scripts/test-fetch.js` | 9 | Diagnostic utility verifying network reachability to Firestore endpoints. |
 | `functions/src/index.ts` | 258 | Firebase Cloud Functions: daily cron jobs for auto-checkout, domain health checks, and notifications. |
 | `functions/package.json` | 28 | Node.js package definition for Firebase Cloud Functions. |
 | `functions/tsconfig.json` | 18 | TypeScript configuration for Cloud Functions backend. |

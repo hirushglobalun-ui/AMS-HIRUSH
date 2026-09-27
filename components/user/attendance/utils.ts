@@ -51,7 +51,7 @@ export const calculateSingleSessionHours = (date: string, session: Session): num
 
   // Completed session with checkIn and checkOut
   const start = new Date(`${date}T${session.checkIn}`);
-  let end = new Date(`${date}T${session.checkOut}`);
+  const end = new Date(`${date}T${session.checkOut}`);
   let diffMs = end.getTime() - start.getTime();
 
   // If checkOut is earlier than checkIn (e.g. midnight crossing or out-of-order cross-day timestamps), add 24 hours

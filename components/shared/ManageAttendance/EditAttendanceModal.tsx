@@ -62,7 +62,7 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
         sessions.forEach(session => {
             if (session.checkIn && session.checkOut) {
                 const start = new Date(`1970-01-01T${session.checkIn}`);
-                let end = new Date(`1970-01-01T${session.checkOut}`);
+                const end = new Date(`1970-01-01T${session.checkOut}`);
                 let diff = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
                 if (diff < 0) diff += 24;
                 if (diff > 0) {

@@ -137,7 +137,7 @@ export const autoCloseStaleAttendanceSessions = async (records: AttendanceRecord
         if (!s.checkIn) return;
         const checkOutTime = s.checkOut || '23:50:00';
         const start = new Date(`${record.date}T${s.checkIn}`);
-        let end = new Date(`${record.date}T${checkOutTime}`);
+        const end = new Date(`${record.date}T${checkOutTime}`);
         let diffMs = end.getTime() - start.getTime();
         if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
         let hours = diffMs / (1000 * 60 * 60);

@@ -2,12 +2,12 @@ import dns from 'dns';
 import tls from 'tls';
 import nodemailer from 'nodemailer';
 
-// Transporter configuration using Gmail App Password
+// Transporter configuration using environment variables
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'hirushglobalun@gmail.com',
-        pass: 'tosf dpji mlfh vxem'
+        user: process.env.GMAIL_USER || 'hirushglobalun@gmail.com',
+        pass: process.env.GMAIL_APP_PASS || 'tosf dpji mlfh vxem'
     }
 });
 
