@@ -7,12 +7,16 @@ import * as tls from 'tls';
 admin.initializeApp();
 const db = admin.firestore();
 
-// Transporter configuration using Gmail App Passwords
+const gmailUser = process.env.GMAIL_USER || '';
+const gmailPass = process.env.GMAIL_APP_PASS || '';
+const alertToEmail = process.env.ALERT_TO_EMAIL || gmailUser;
+
+// Transporter configuration using environment variables
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'hirushglobalun@gmail.com', 
-        pass: 'tosf dpji mlfh vxem' 
+        user: gmailUser, 
+        pass: gmailPass 
     }
 });
 
@@ -244,12 +248,12 @@ export const dailyExpiryCheck = onSchedule({
                 `;
 
                 await transporter.sendMail({
-                    from: '"Hirush AMS Monitor" <hirushglobalun@gmail.com>',
-                    to: 'hirushglobalun@gmail.com',
+                    from: `"Hirush AMS Monitor" <${gmailUser}>`,
+                    to: alertToEmail,
                     subject: emailSubject,
                     html: emailHtml
                 });
-                console.log(`Automated email alert sent for ${data.projectName || data.domainDetail} to hirushglobalun@gmail.com`);
+                console.log(`Automated email alert sent for ${data.projectName || data.domainDetail} to ${alertToEmail}`);
             }
         }
     } catch (error) {

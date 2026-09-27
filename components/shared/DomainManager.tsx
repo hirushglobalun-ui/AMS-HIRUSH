@@ -101,7 +101,6 @@ const DomainManager: React.FC = () => {
           sslStatus: domain.sslStatus || 'Healthy',
           healthError: domain.healthError || '',
           alertReason: 'Manual status check dispatched from Domain Manager',
-          toEmail: 'hirushglobalun@gmail.com',
         })
       });
 
@@ -131,7 +130,7 @@ const DomainManager: React.FC = () => {
           </h1>
           <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
             <Clock size={14} className="text-indigo-600" />
-            <span>Automated Daily Email Audits: <strong className="text-slate-700 dark:text-slate-300">6:30 PM IST</strong> &bull; Recipient: <strong className="text-indigo-600">hirushglobalun@gmail.com</strong></span>
+            <span>Automated Daily Email Audits: <strong className="text-slate-700 dark:text-slate-300">6:30 PM IST</strong> &bull; Recipient: <strong className="text-indigo-600">{process.env.NEXT_PUBLIC_ALERT_TO_EMAIL || 'Configured in .env'}</strong></span>
           </p>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">

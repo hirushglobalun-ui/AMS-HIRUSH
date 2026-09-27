@@ -2,14 +2,18 @@ import dns from 'dns';
 import tls from 'tls';
 import nodemailer from 'nodemailer';
 
+const gmailUser = process.env.GMAIL_USER;
+const gmailPass = process.env.GMAIL_APP_PASS;
+const alertToEmail = process.env.ALERT_TO_EMAIL || gmailUser;
+
 // Transporter configuration using environment variables
-const transporter = nodemailer.createTransport({
+const transporter = (gmailUser && gmailPass) ? nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.GMAIL_USER || 'hirushglobalun@gmail.com',
-        pass: process.env.GMAIL_APP_PASS || 'qsrx ykqj qukr wrvv'
+        user: gmailUser,
+        pass: gmailPass
     }
-});
+}) : null;
 
 // Helper: Normalize URL to a clean hostname
 const getCleanHostname = (url) => {
@@ -96,7 +100,8 @@ const parseFirestoreFields = (fields) => {
 
 // Get anonymous Auth token for authenticated Firestore queries
 const getAuthToken = async () => {
-    const apiKey = "AIzaSyAAsB5Q363MdGO1YkolcpStz1o6CxgcTdU";
+    const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
+    if (!apiKey) return null;
     try {
         const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
             method: 'POST',
@@ -115,8 +120,9 @@ const getAuthToken = async () => {
 
 // Fetch collection documents via Firestore REST API
 const fetchCollection = async (collectionName, idToken) => {
-    const apiKey = "AIzaSyAAsB5Q363MdGO1YkolcpStz1o6CxgcTdU";
-    const url = `https://firestore.googleapis.com/v1/projects/hirushglobal-llp/databases/(default)/documents/${collectionName}?key=${apiKey}`;
+    const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || 'hirushglobal-llp';
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${collectionName}?key=${apiKey}`;
     const headers = idToken ? { 'Authorization': `Bearer ${idToken}` } : {};
     const res = await fetch(url, { headers });
     if (!res.ok) {
@@ -252,13 +258,15 @@ const runDailyAudit = async () => {
                 `;
 
                 try {
-                    await transporter.sendMail({
-                        from: '"Hirush AMS Monitor" <hirushglobalun@gmail.com>',
-                        to: 'hirushglobalun@gmail.com',
-                        subject: emailSubject,
-                        html: emailHtml
-                    });
-                    console.log(`✅ Email alert dispatched for ${data.projectName || cleanUrl} to hirushglobalun@gmail.com`);
+                    if (transporter && alertToEmail) {
+                        await transporter.sendMail({
+                            from: `"Hirush AMS Monitor" <${gmailUser}>`,
+                            to: alertToEmail,
+                            subject: emailSubject,
+                            html: emailHtml
+                        });
+                        console.log(`✅ Email alert dispatched for ${data.projectName || cleanUrl} to ${alertToEmail}`);
+                    }
                 } catch (mailErr) {
                     console.error(`❌ Failed to send email for ${data.projectName || cleanUrl}:`, mailErr);
                 }
