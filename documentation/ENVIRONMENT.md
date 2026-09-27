@@ -68,10 +68,9 @@ NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 # =================================================================
 # NODEMAILER GMAIL SMTP (For Domain & System Email Alerts)
 # =================================================================
-GMAIL_USER=hirushglobalun@gmail.com
-GMAIL_APP_PASS=tosf dpji mlfh vxem
-ALERT_TO_EMAIL=hirushglobalun@gmail.com
-```
+GMAIL_USER=your_email@gmail.com
+GMAIL_APP_PASS=your_16_char_app_password
+ALERT_TO_EMAIL=admin@company.com
 
 # =================================================================
 # GOOGLE GEMINI AI SDK (For AI SRS Document Generation)
