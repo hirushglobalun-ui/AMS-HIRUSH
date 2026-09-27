@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from '../common/Card';
 import Modal from '../common/Modal';
@@ -49,9 +51,9 @@ const DomainManager: React.FC = () => {
     });
 
     const testEmailAlert = async (domain: ConsolidatedDomain) => {
-        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
+        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || process.env.VITE_EMAILJS_SERVICE_ID;
+        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
 
         const emailJSConfigured = !!(publicKey && serviceId && templateId);
         if (!emailJSConfigured) {
@@ -175,9 +177,9 @@ const DomainManager: React.FC = () => {
 
             let sentEmail = false;
             if (isExpiringSoon || hasIssue) {
-                const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-                const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-                const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+                const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
+                const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || process.env.VITE_EMAILJS_SERVICE_ID;
+                const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
                 if (publicKey && serviceId && templateId) {
                     try {
                         const emailjs = await import('@emailjs/browser');
@@ -254,9 +256,9 @@ const DomainManager: React.FC = () => {
     };
 
     const runBrowserAudits = async (allLeads: Lead[], allCustom: CustomDomain[]) => {
-        const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-        const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-        const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+        const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || process.env.VITE_EMAILJS_PUBLIC_KEY;
+        const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || process.env.VITE_EMAILJS_SERVICE_ID;
+        const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || process.env.VITE_EMAILJS_TEMPLATE_ID;
 
         const emailJSConfigured = !!(publicKey && serviceId && templateId);
         if (emailJSConfigured) {

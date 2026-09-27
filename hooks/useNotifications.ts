@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @file useNotifications.ts
  * @description Provides logic, persistence, and dismissal utilities for notifications.
