@@ -42,8 +42,9 @@ service cloud.firestore {
       // Anyone logged in can read basic user info (needed for UI features like chat, directory)
       allow read: if isAuthenticated();
       
-      // Admins and HR can create or delete users
-      allow create, delete: if isAdminOrHR();
+      // Admins and HR can create or delete users. Self-creation allowed during initial setup when UID matches.
+      allow create: if isAuthenticated() && (isAdminOrHR() || request.auth.uid == userId);
+      allow delete: if isAdminOrHR();
       
       // Users can update their own profile, BUT cannot elevate their role or change status
       allow update: if isAuthenticated() && (

@@ -14,6 +14,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Role, UserStatus } from '../../types';
 import Button from '../common/Button';
+import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 interface FirstTimeSetupProps {
@@ -108,6 +109,11 @@ const FirstTimeSetup: React.FC<FirstTimeSetupProps> = ({ onSetupComplete }) => {
                         <Button type="submit" className="w-full justify-center py-2.5" disabled={isLoading}>
                             {isLoading ? 'Creating Account...' : 'Create Admin Account'}
                         </Button>
+                    </div>
+                    <div className="text-center pt-2">
+                        <Link href="/login" className="text-xs text-slate-400 hover:text-primary transition-colors font-medium inline-block">
+                            Already have an account? Sign in →
+                        </Link>
                     </div>
                 </form>
             </div>

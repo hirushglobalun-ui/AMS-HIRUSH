@@ -74,7 +74,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             } catch (e: any) {
                 console.warn("First time setup check skipped/failed (likely rules active):", e);
                 setIsFirstTimeSetup(false);
-                localStorage.setItem('ams_setup_done', 'true');
             }
         };
 

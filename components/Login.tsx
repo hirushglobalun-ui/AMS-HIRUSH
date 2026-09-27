@@ -8,6 +8,7 @@
  */
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Button from './common/Button';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -79,6 +80,14 @@ const Login: React.FC = () => {
             <Button type="submit" className="w-full justify-center py-3.5 text-base font-semibold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all rounded-xl" disabled={isLoading}>
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
+          </div>
+          <div className="text-center pt-2">
+            <Link
+              href="/setup"
+              className="text-xs text-slate-400 hover:text-indigo-600 transition-colors font-medium inline-block"
+            >
+              First-time installation? Setup Admin Account →
+            </Link>
           </div>
         </form>
 
