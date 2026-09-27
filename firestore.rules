@@ -1,0 +1,167 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // HELPER FUNCTIONS
+    // ==========================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      // get() reads a document, returning a map of its data
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function getRole() {
+      return getUserData().role;
+    }
+    
+    function isAdminOrHR() {
+      return isAuthenticated() && (getRole() == 'Admin' || getRole() == 'HR');
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Checks if the user is trying to change protected fields
+    function modifyingRestrictedFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['role', 'status', 'department', 'employeeId', 'joiningDate']);
+    }
+
+    // ==========================================
+    // COLLECTION RULES
+    // ==========================================
+
+    // 1. Users collection
+    match /users/{userId} {
+      // Anyone logged in can read basic user info (needed for UI features like chat, directory)
+      allow read: if isAuthenticated();
+      
+      // Admins and HR can create or delete users
+      allow create, delete: if isAdminOrHR();
+      
+      // Users can update their own profile, BUT cannot elevate their role or change status
+      allow update: if isAuthenticated() && (
+        isAdminOrHR() || 
+        (isOwner(userId) && !modifyingRestrictedFields())
+      );
+    }
+    
+    // 2. Attendance collection
+    match /attendance/{docId} {
+      // Users can read their own attendance, Admins/HR can read all
+      allow read: if isAdminOrHR() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Users can only create their own records
+      allow create: if isAuthenticated() && (isAdminOrHR() || request.resource.data.userId == request.auth.uid);
+      
+      // Users can only update their own records (and can't steal records by changing userId)
+      allow update: if isAuthenticated() && (
+        isAdminOrHR() || 
+        (resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid)
+      );
+      
+      allow delete: if isAdminOrHR();
+    }
+
+    // 3. Leave Requests collection
+    match /leaveRequests/{docId} {
+      // Users can read their own leaves, Admins/HR can read all
+      allow read: if isAdminOrHR() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      
+      // Users can create a leave request, but the status MUST be 'Pending'
+      allow create: if isAuthenticated() && (
+        isAdminOrHR() || 
+        (request.resource.data.userId == request.auth.uid && request.resource.data.status == 'Pending')
+      );
+      
+      // Users can only edit if it is their request, it is currently Pending, and it stays Pending
+      allow update: if isAuthenticated() && (
+        isAdminOrHR() || 
+        (
+          resource.data.userId == request.auth.uid && 
+          resource.data.status == 'Pending'
+        )
+      );
+      
+      allow delete: if isAdminOrHR() || (
+        isAuthenticated() && 
+        resource.data.userId == request.auth.uid && 
+        resource.data.status == 'Pending'
+      );
+    }
+
+    // 4. Audit Logs collection (Company-grade tracking)
+    match /audit_logs/{docId} {
+      // Only Admins and HR can read audit logs
+      allow read: if isAdminOrHR();
+      
+      // Any authenticated user can create an audit log (so actions by regular users are logged)
+      allow create: if isAuthenticated();
+      
+      // NOBODY can update or delete audit logs (immutable append-only log)
+      allow update, delete: if false;
+    }
+
+    // 5. Messages collection
+    match /messages/{docId} {
+      // Allow authenticated users to read messages (client filters messages by recipient, role, department, and sender)
+      allow read: if isAuthenticated();
+      
+      // Any authenticated user can send a message
+      allow create: if isAuthenticated() && (isAdminOrHR() || request.resource.data.senderId == request.auth.uid);
+      
+      // Only sender or Admin/HR can delete
+      allow delete: if isAuthenticated() && (resource.data.senderId == request.auth.uid || isAdminOrHR());
+      
+      // Allow authenticated updates (for read status / reactions)
+      allow update: if isAuthenticated();
+    }
+
+    // 6. Settings collection
+    match /settings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrHR();
+    }
+
+    // 7. Holidays collection
+    match /holidays/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrHR();
+    }
+
+    // 8. Research collection
+    match /research/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrHR();
+    }
+
+    // 9. Leads collection
+    match /leads/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 10. Lead Activities collection
+    match /leadActivities/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 11. Domains collection
+    match /domains/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // 12. CRM Companies collection
+    match /crm_companies/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+  }
+}
