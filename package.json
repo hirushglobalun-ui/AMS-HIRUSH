@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives"
+    "dev": "next dev -p 3005",
+    "build": "next build",
+    "start": "next start -p 3005",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
+    "vite:dev": "vite",
+    "vite:build": "vite build"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -20,6 +22,7 @@
     "html2canvas": "^1.4.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.548.0",
+    "next": "^16.3.6",
     "nodemailer": "^10.0.1",
     "papaparse": "^5.5.4",
     "react": "^19.2.0",
