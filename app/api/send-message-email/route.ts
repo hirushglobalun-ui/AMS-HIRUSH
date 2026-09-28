@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-import path from 'path';
-import fs from 'fs';
 
 export async function POST(req: Request) {
   try {
@@ -82,18 +80,8 @@ export async function POST(req: Request) {
         </div>`
       : '';
 
-    // Check company logo on local filesystem for inline CID embedding
-    const logoFilePath = path.join(process.cwd(), 'public', 'assets', 'company-logo.png');
-    const hasCompanyLogo = fs.existsSync(logoFilePath);
-
-    const attachments = [];
-    if (hasCompanyLogo) {
-      attachments.push({
-        filename: 'company-logo.png',
-        path: logoFilePath,
-        cid: 'hirushCompanyLogo'
-      });
-    }
+    // Company Logo: Use public secure HTTPS Cloudinary URL for 100% reliable rendering in Gmail / email clients
+    const companyLogoUrl = process.env.COMPANY_LOGO_URL || 'https://res.cloudinary.com/hflmixsy/image/upload/v1790566928/hirush_ams/hirush_company_logo.png';
 
     const emailSubject = `📢 [Hirush Global] ${title}`;
     const sentDateFormatted = new Date().toLocaleDateString('en-US', {
@@ -128,12 +116,8 @@ export async function POST(req: Request) {
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                       <tr>
                         <td width="54" valign="middle">
-                          <div style="width: 48px; height: 48px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center;">
-                            ${
-                              hasCompanyLogo
-                                ? `<img src="cid:hirushCompanyLogo" alt="Hirush Global Logo" width="40" height="40" style="display: block; width: 40px; height: 40px; object-fit: contain; margin: 0 auto;" />`
-                                : `<div style="line-height: 40px; font-weight: 900; color: #4f46e5; font-size: 18px;">HG</div>`
-                            }
+                          <div style="width: 48px; height: 48px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center;">
+                            <img src="${companyLogoUrl}" alt="Hirush Global Logo" width="42" height="42" style="display: block; width: 42px; height: 42px; object-fit: contain; margin: 0 auto; border: 0;" />
                           </div>
                         </td>
                         <td style="padding-left: 14px;" valign="middle">
@@ -229,8 +213,7 @@ export async function POST(req: Request) {
       to: gmailUser, // Primary sender receives copy
       bcc: validEmails, // All employees receive blind copy
       subject: emailSubject,
-      html: emailHtml,
-      attachments
+      html: emailHtml
     });
 
     return NextResponse.json({
