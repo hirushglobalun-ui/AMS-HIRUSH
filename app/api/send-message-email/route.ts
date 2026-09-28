@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import path from 'path';
+import fs from 'fs';
 
 export async function POST(req: Request) {
   try {
@@ -80,7 +82,26 @@ export async function POST(req: Request) {
         </div>`
       : '';
 
+    // Check company logo on local filesystem for inline CID embedding
+    const logoFilePath = path.join(process.cwd(), 'public', 'assets', 'company-logo.png');
+    const hasCompanyLogo = fs.existsSync(logoFilePath);
+
+    const attachments = [];
+    if (hasCompanyLogo) {
+      attachments.push({
+        filename: 'company-logo.png',
+        path: logoFilePath,
+        cid: 'hirushCompanyLogo'
+      });
+    }
+
     const emailSubject = `📢 [Hirush Global] ${title}`;
+    const sentDateFormatted = new Date().toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -90,23 +111,42 @@ export async function POST(req: Request) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>${emailSubject}</title>
       </head>
-      <body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 32px 16px;">
+      <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1e293b;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 32px 16px;">
           <tr>
             <td align="center">
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 620px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03); border: 1px solid #e2e8f0;">
                 
-                <!-- HEADER BRANDING -->
+                <!-- TOP BRAND GRADIENT ACCENT -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px 28px; text-align: left; border-bottom: 3px solid #2563eb;">
+                  <td style="height: 5px; background: linear-gradient(90deg, #4f46e5 0%, #3b82f6 50%, #06b6d4 100%);"></td>
+                </tr>
+
+                <!-- AMS THEMED HEADER WITH LOGO -->
+                <tr>
+                  <td style="padding: 28px 32px 20px 32px; border-bottom: 1px solid #f1f5f9; background: #ffffff;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                       <tr>
-                        <td>
-                          <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;">
-                            HIRUSH GLOBAL LLP
+                        <td width="54" valign="middle">
+                          <div style="width: 48px; height: 48px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center;">
+                            ${
+                              hasCompanyLogo
+                                ? `<img src="cid:hirushCompanyLogo" alt="Hirush Global Logo" width="40" height="40" style="display: block; width: 40px; height: 40px; object-fit: contain; margin: 0 auto;" />`
+                                : `<div style="line-height: 40px; font-weight: 900; color: #4f46e5; font-size: 18px;">HG</div>`
+                            }
                           </div>
-                          <div style="font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                        </td>
+                        <td style="padding-left: 14px;" valign="middle">
+                          <div style="font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: -0.4px; line-height: 1.2;">
+                            Hirush Global
+                          </div>
+                          <div style="font-size: 12px; font-weight: 600; color: #6366f1; letter-spacing: 0.2px; margin-top: 2px;">
                             Attendance & Enterprise Management System
+                          </div>
+                        </td>
+                        <td align="right" valign="middle">
+                          <div style="display: inline-block; background-color: #eef2ff; border: 1px solid #c7d2fe; border-radius: 9999px; padding: 4px 12px; font-size: 11px; font-weight: 700; color: #4338ca; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Notice
                           </div>
                         </td>
                       </tr>
@@ -114,48 +154,50 @@ export async function POST(req: Request) {
                   </td>
                 </tr>
 
-                <!-- BADGE & TITLE -->
+                <!-- TITLE & BADGE -->
                 <tr>
-                  <td style="padding: 28px 28px 16px 28px;">
-                    <div style="display: inline-block; padding: 4px 12px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 9999px; font-size: 11px; font-weight: 700; color: #1d4ed8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
-                      📢 New Company Notice
-                    </div>
-                    <h1 style="margin: 0; font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.3;">
+                  <td style="padding: 28px 32px 12px 32px;">
+                    <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.35; letter-spacing: -0.3px;">
                       ${title}
                     </h1>
                   </td>
                 </tr>
 
-                <!-- METADATA CARD -->
+                <!-- METADATA CARD (AMS THEME) -->
                 <tr>
-                  <td style="padding: 0 28px 20px 28px;">
-                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; padding: 12px 16px;">
+                  <td style="padding: 0 32px 20px 32px;">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 12px 18px;">
                       <tr>
-                        <td style="font-size: 12px; color: #64748b; padding: 4px 0;">
-                          <strong style="color: #334155;">From:</strong> ${cleanSenderName} ${cleanSenderRole}
+                        <td style="font-size: 13px; color: #64748b; padding: 3px 0;">
+                          <strong style="color: #1e293b;">From:</strong> ${cleanSenderName} <span style="color: #6366f1; font-weight: 600;">${cleanSenderRole}</span>
                         </td>
-                        <td align="right" style="font-size: 12px; color: #64748b; padding: 4px 0;">
-                          <strong style="color: #334155;">Audience:</strong> ${audienceText}
+                        <td align="right" style="font-size: 13px; color: #64748b; padding: 3px 0;">
+                          <strong style="color: #1e293b;">Date:</strong> ${sentDateFormatted}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="font-size: 13px; color: #64748b; padding-top: 4px; border-top: 1px dashed #e2e8f0; margin-top: 4px;">
+                          <strong style="color: #1e293b;">Audience:</strong> <span style="background-color: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">${audienceText}</span>
                         </td>
                       </tr>
                     </table>
                   </td>
                 </tr>
 
-                <!-- MESSAGE BODY -->
+                <!-- MESSAGE BODY (AMS THEME) -->
                 <tr>
-                  <td style="padding: 0 28px 24px 28px;">
-                    <div style="background-color: #ffffff; border-left: 4px solid #2563eb; padding: 18px 20px; border-radius: 0 8px 8px 0; background-color: #f8fafc; font-size: 15px; line-height: 1.6; color: #1e293b;">
+                  <td style="padding: 0 32px 24px 32px;">
+                    <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; border-radius: 0 12px 12px 0; padding: 20px 22px; font-size: 15px; line-height: 1.65; color: #334155; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
                       ${sanitizedContent}
                     </div>
                     ${imageHtml}
                   </td>
                 </tr>
 
-                <!-- CALL TO ACTION BUTTON -->
+                <!-- CALL TO ACTION (AMS PRIMARY BUTTON) -->
                 <tr>
-                  <td align="center" style="padding: 8px 28px 32px 28px;">
-                    <a href="${appUrl}/messages" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
+                  <td align="center" style="padding: 8px 32px 32px 32px;">
+                    <a href="${appUrl}/messages" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); letter-spacing: 0.2px;">
                       Open in AMS Portal →
                     </a>
                   </td>
@@ -163,11 +205,11 @@ export async function POST(req: Request) {
 
                 <!-- FOOTER -->
                 <tr>
-                  <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 28px; text-align: center;">
-                    <p style="margin: 0 0 6px 0; font-size: 12px; color: #64748b; font-weight: 500;">
+                  <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 32px; text-align: center;">
+                    <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569; font-weight: 600;">
                       Hirush Global LLP • Automated Enterprise Communication System
                     </p>
-                    <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                    <p style="margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.45;">
                       This notification was transmitted securely to verified company employees. Please do not reply directly to this automated email.
                     </p>
                   </td>
@@ -187,7 +229,8 @@ export async function POST(req: Request) {
       to: gmailUser, // Primary sender receives copy
       bcc: validEmails, // All employees receive blind copy
       subject: emailSubject,
-      html: emailHtml
+      html: emailHtml,
+      attachments
     });
 
     return NextResponse.json({
