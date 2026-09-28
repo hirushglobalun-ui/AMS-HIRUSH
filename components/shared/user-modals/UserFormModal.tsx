@@ -66,6 +66,17 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
                 if (!editingUser || (editingUser && value !== editingUser.role)) {
                     newState.employeeId = generateEmployeeId(value as Role, allUsers);
                 }
+                // Automatically set sensible default department and position if creating a new user
+                if (!editingUser) {
+                    if (value === Role.HR) {
+                        newState.department = 'HR';
+                        if (!newState.position) newState.position = 'HR Manager';
+                    } else if (value === Role.VISITOR) {
+                        newState.department = 'Visitor';
+                    } else if (value === Role.ADMIN) {
+                        newState.department = 'Management';
+                    }
+                }
             }
             return newState;
         });
@@ -176,8 +187,12 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
                 {/* Modal Header */}
                 <div className="flex justify-between items-center px-4 sm:px-8 py-4 sm:py-6 border-b border-slate-100 flex-shrink-0">
                     <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-900">{editingUser ? 'Edit Profile' : 'New Employee'}</h3>
-                        <p className="text-xs sm:text-sm text-slate-500">{editingUser ? 'Update account details' : 'Create a new staff account'}</p>
+                        <h3 className="text-lg sm:text-xl font-bold text-slate-900">
+                            {editingUser ? 'Edit Profile' : `New ${formData.role || 'User'}`}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-500">
+                            {editingUser ? 'Update account details' : `Create a new ${formData.role ? formData.role.toLowerCase() : 'staff'} account`}
+                        </p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-900 transition-colors">
                         <X size={20} className="sm:w-6 sm:h-6" />
@@ -232,10 +247,27 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
                                 <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Professional Details</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Role</label>
+                                    <select
+                                        name="role"
+                                        value={formData.role}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700"
+                                        disabled={!!editingUser && editingUser.role === Role.ADMIN}
+                                    >
+                                        {Object.values(Role).map(role =>
+                                            <option
+                                                key={role}
+                                                value={role}
+                                                disabled={role === Role.ADMIN && editingUser?.role !== Role.ADMIN && !editingUser}
+                                            >
+                                                {role}
+                                            </option>
+                                        )}
+                                    </select>
+                                </div>
                                 <FormInput label="Employee ID" name="employeeId" value={formData.employeeId} onChange={handleInputChange} required readOnly className="!bg-slate-100 !text-slate-500 cursor-not-allowed font-mono" />
-                                <FormInput label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required placeholder="+91 XXXX XXX XXX" />
-                                <FormInput label="Emergency Contact (Optional)" name="emergencyPhone" type="tel" value={formData.emergencyPhone || ''} onChange={handleInputChange} placeholder="+91 XXXX XXX XXX" />
-                                <FormInput label="Position" name="position" value={formData.position || ''} onChange={handleInputChange} placeholder="e.g., Senior Developer" />
                                 <div>
                                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Department</label>
                                     <select
@@ -246,14 +278,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
                                         required
                                     >
                                         <option value="">Select Department</option>
-                                        <option value="SEO">SEO</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Management">Management</option>
                                         <option value="Development">Development</option>
+                                        <option value="SEO">SEO</option>
                                         <option value="Product">Product</option>
                                         <option value="Media">Media</option>
                                         <option value="Sales">Sales</option>
                                         <option value="Visitor">Visitor</option>
                                     </select>
                                 </div>
+                                <FormInput label="Position" name="position" value={formData.position || ''} onChange={handleInputChange} placeholder={formData.role === Role.HR ? "e.g., HR Manager / Executive" : "e.g., Senior Developer"} />
+                                <FormInput label="Phone Number" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required placeholder="+91 XXXX XXX XXX" />
+                                <FormInput label="Emergency Contact (Optional)" name="emergencyPhone" type="tel" value={formData.emergencyPhone || ''} onChange={handleInputChange} placeholder="+91 XXXX XXX XXX" />
                                 {(formData.department === 'Visitor' || formData.role === Role.VISITOR) && (
                                     <FormInput
                                         label="Company Name (Optional)"
@@ -354,27 +391,19 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, editingU
                         <div className="space-y-5">
                             <div className="flex items-center gap-2 mb-2">
                                 <CheckCircle size={16} className="text-indigo-600" />
-                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">System Access</h4>
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-widest">System Access & Security</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Role</label>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Account Status</label>
                                     <select
-                                        name="role"
-                                        value={formData.role}
+                                        name="status"
+                                        value={formData.status || UserStatus.ACTIVE}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700"
-                                        disabled={!!editingUser && editingUser.role === Role.ADMIN}
                                     >
-                                        {Object.values(Role).map(role =>
-                                            <option
-                                                key={role}
-                                                value={role}
-                                                disabled={role === Role.ADMIN && editingUser?.role !== Role.ADMIN && !editingUser}
-                                            >
-                                                {role}
-                                            </option>
-                                        )}
+                                        <option value={UserStatus.ACTIVE}>Active</option>
+                                        <option value={UserStatus.INACTIVE}>Inactive</option>
                                     </select>
                                 </div>
                                 <div>

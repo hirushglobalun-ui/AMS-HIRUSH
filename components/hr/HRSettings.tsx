@@ -394,7 +394,7 @@ const HRSettings: React.FC = () => {
                             Bypass Location Restriction for Departments
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {['SEO', 'Developer', 'Media', 'Visitor'].map(dept => (
+                            {['HR', 'Management', 'Development', 'SEO', 'Product', 'Media', 'Sales', 'Visitor'].map(dept => (
                                 <label key={dept} className="flex items-center p-3 bg-white border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
                                     <input
                                         type="checkbox"

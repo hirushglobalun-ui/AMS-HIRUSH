@@ -275,6 +275,8 @@ const ManageMessages: React.FC = () => {
                                         required
                                     >
                                         <option value="">Select Department</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Management">Management</option>
                                         <option value="SEO">SEO</option>
                                         <option value="Development">Development</option>
                                         <option value="Product">Product</option>

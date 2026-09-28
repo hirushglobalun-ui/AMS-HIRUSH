@@ -390,7 +390,7 @@ const AdminSettings: React.FC = () => {
                             Bypass Location Restriction for Departments
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {['SEO', 'Developer', 'Media', 'Visitor'].map(dept => (
+                            {['HR', 'Management', 'Development', 'SEO', 'Product', 'Media', 'Sales', 'Visitor'].map(dept => (
                                 <label key={dept} className="flex items-center p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <input
                                         type="checkbox"

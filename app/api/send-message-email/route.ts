@@ -80,8 +80,10 @@ export async function POST(req: Request) {
         </div>`
       : '';
 
-    // Company Logo: Use public secure HTTPS Cloudinary URL for 100% reliable rendering in Gmail / email clients
-    const companyLogoUrl = process.env.COMPANY_LOGO_URL || 'https://res.cloudinary.com/hflmixsy/image/upload/v1790566928/hirush_ams/hirush_company_logo.png';
+    // High-performance lightweight CDN logo URL (optimized to 200x200, 3.9KB for Google Image Proxy & email clients)
+    const companyLogoUrl =
+      process.env.COMPANY_LOGO_URL ||
+      'https://res.cloudinary.com/hflmixsy/image/upload/w_200,h_200,c_fit,f_png/v1790566928/hirush_ams/hirush_company_logo.png';
 
     const emailSubject = `📢 [Hirush Global] ${title}`;
     const sentDateFormatted = new Date().toLocaleDateString('en-US', {
@@ -117,7 +119,7 @@ export async function POST(req: Request) {
                       <tr>
                         <td width="54" valign="middle">
                           <div style="width: 48px; height: 48px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); text-align: center;">
-                            <img src="${companyLogoUrl}" alt="Hirush Global Logo" width="42" height="42" style="display: block; width: 42px; height: 42px; object-fit: contain; margin: 0 auto; border: 0;" />
+                            <img src="${companyLogoUrl}" alt="Hirush Global" width="42" height="42" style="display: block; width: 42px; height: 42px; max-width: 42px; max-height: 42px; object-fit: contain; margin: 0 auto; border: 0;" />
                           </div>
                         </td>
                         <td style="padding-left: 14px;" valign="middle">

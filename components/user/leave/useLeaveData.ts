@@ -6,8 +6,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { db } from '../../../firebase';
-import { addDoc, serverTimestamp, collection, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { LeaveRequest, LeaveType, LeaveStatus, AttendanceRecord, Holiday, User } from '../../../types';
+import { addDoc, serverTimestamp, collection, getDocs, doc, deleteDoc, updateDoc, query, where } from 'firebase/firestore';
+import { LeaveRequest, LeaveType, LeaveStatus, AttendanceRecord, Holiday, User, Role, UserStatus } from '../../../types';
 import { fetchLeaveRequests, invalidateCache, fetchAttendance } from '../../../services/dataService';
 import { toast } from 'react-hot-toast';
 import { getLocalDateString, getActualLeaveDaysDeducted, getLeaveDays } from './leaveUtils';
@@ -154,7 +154,7 @@ export const useLeaveData = (user: User | null) => {
         });
         toast.success('Leave request updated successfully!');
       } else {
-        await addDoc(collection(db, 'leaveRequests'), {
+        const newLeaveDoc = await addDoc(collection(db, 'leaveRequests'), {
           userId: user.id,
           userName: user.name,
           leaveType,
@@ -167,6 +167,78 @@ export const useLeaveData = (user: User | null) => {
           createdAt: serverTimestamp(),
         });
         toast.success('Leave request submitted successfully!');
+
+        // 1. Fetch registered Admin and HR users from Firestore (their actual account emails and user IDs)
+        let recipientEmails: string[] = [];
+        let adminAndHrUserIds: string[] = [];
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        try {
+          const adminAndHrQuery = query(
+            collection(db, 'users'),
+            where('role', 'in', [Role.ADMIN, Role.HR])
+          );
+          const snap = await getDocs(adminAndHrQuery);
+          snap.forEach((d) => {
+            const uData = d.data();
+            if (uData.status !== UserStatus.INACTIVE) {
+              if (uData.email && typeof uData.email === 'string' && emailRegex.test(uData.email.trim())) {
+                recipientEmails.push(uData.email.trim().toLowerCase());
+              }
+              adminAndHrUserIds.push(d.id);
+            }
+          });
+          // De-duplicate emails
+          recipientEmails = Array.from(new Set(recipientEmails));
+        } catch (fetchErr) {
+          console.warn('Could not query Admin & HR users:', fetchErr);
+        }
+
+        // 2. Send in-app message to both Admin and HR users (triggers sound, toast, and unread badge for both)
+        try {
+          const durationText = duration === 'Half Day' ? `Half Day (${halfDayType})` : 'Full Day';
+          const dateText = startDate === finalEndDate ? startDate : `${startDate} to ${finalEndDate}`;
+
+          await addDoc(collection(db, 'messages'), {
+            title: `New Leave Request: ${user.name} (${leaveType})`,
+            content: `Employee ${user.name} (${user.employeeId || 'N/A'}) has applied for ${durationText} ${leaveType} leave.\n\nDates: ${dateText}\nReason: ${reason}`,
+            recipient: adminAndHrUserIds.length > 0 ? adminAndHrUserIds : [Role.ADMIN, Role.HR],
+            recipientType: 'individual',
+            senderId: user.id,
+            senderName: user.name,
+            timestamp: serverTimestamp(),
+            type: 'leave_request',
+            leaveRequestId: newLeaveDoc.id,
+            link: '/leave',
+          });
+        } catch (msgErr) {
+          console.warn('Failed to send in-app message to Admin & HR:', msgErr);
+        }
+
+        // 3. Dispatch automated email notification directly to Admin and HR registered email inboxes
+        if (recipientEmails.length > 0) {
+          try {
+            fetch('/api/send-leave-email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                employeeName: user.name,
+                employeeId: user.employeeId,
+                employeeEmail: user.email,
+                employeeDepartment: user.department,
+                leaveType,
+                duration,
+                halfDayType: duration === 'Half Day' ? halfDayType : null,
+                startDate,
+                endDate: finalEndDate,
+                reason,
+                recipientEmails,
+                portalUrl: typeof window !== 'undefined' ? window.location.origin : undefined,
+              }),
+            }).catch((err) => console.warn('Background leave email request failed:', err));
+          } catch (emailErr) {
+            console.warn('Failed to trigger leave email endpoint:', emailErr);
+          }
+        }
       }
 
       invalidateCache('leaveRequests');
