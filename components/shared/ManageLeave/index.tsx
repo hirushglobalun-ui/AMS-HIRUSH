@@ -6,7 +6,7 @@
  * @last_modified 2026
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Card from '../../common/Card';
 import Button from '../../common/Button';
 import { LeaveRequest, User, LeaveStatus, LeaveType } from '../../../types';
@@ -35,14 +35,19 @@ const ManageLeave: React.FC = () => {
     // Pagination State
     const [limitCount, setLimitCount] = useState(20);
     const [hasMore, setHasMore] = useState(true);
+    const limitCountRef = useRef(limitCount);
+    useEffect(() => {
+        limitCountRef.current = limitCount;
+    }, [limitCount]);
 
-    const fetchLeaveRequestsAndUsers = useCallback(async (currentLimit = limitCount) => {
+    const fetchLeaveRequestsAndUsers = useCallback(async (currentLimit?: number) => {
+        const count = currentLimit ?? limitCountRef.current;
         setLoading(true);
         try {
             // Fetch leave requests (with caching bypassed due to limitCount)
-            const requestsData = await fetchLeaveRequests({ limitCount: currentLimit });
+            const requestsData = await fetchLeaveRequests({ limitCount: count });
             setLeaveRequests(requestsData);
-            setHasMore(requestsData.length === currentLimit);
+            setHasMore(requestsData.length === count);
 
             // Fetch users (with caching)
             const usersData = await fetchUsers();

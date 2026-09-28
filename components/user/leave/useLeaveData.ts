@@ -38,9 +38,6 @@ export const useLeaveData = (user: User | null) => {
     fetchHolidays();
   }, []);
 
-  const now = new Date();
-  const firstDayOfMonth = getLocalDateString(new Date(now.getFullYear(), now.getMonth(), 1));
-
   const loadLeaveHistory = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -63,9 +60,16 @@ export const useLeaveData = (user: User | null) => {
     loadLeaveHistory();
   }, [loadLeaveHistory]);
 
+  const firstDayOfMonth = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
+  }, []);
+
   const quotaStats = useMemo(() => {
     const totalQuota = 2.5;
-    const currentMonthStr = now.toISOString().substring(0, 7);
+    const currentMonthStr = new Date().toISOString().substring(0, 7);
 
     const monthLeaves = leaveHistory.filter(
       (l) => l.startDate && typeof l.startDate === 'string' && l.startDate.startsWith(currentMonthStr)

@@ -57,15 +57,20 @@ const ManageUsers: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'All' | UserStatus>('All');
     const [limitCount, setLimitCount] = useState(20);
     const [hasMore, setHasMore] = useState(true);
+    const limitCountRef = useRef(limitCount);
+    useEffect(() => {
+        limitCountRef.current = limitCount;
+    }, [limitCount]);
 
-    const loadUsers = useCallback(async (forceRefresh = false, currentLimit = limitCount) => {
-        if (!forceRefresh && currentLimit > 20) setLoading(false); // don't show full loading spinner for load more
+    const loadUsers = useCallback(async (forceRefresh = false, currentLimit?: number) => {
+        const count = currentLimit ?? limitCountRef.current;
+        if (!forceRefresh && count > 20) setLoading(false); // don't show full loading spinner for load more
         else setLoading(true);
         
         try {
-            const usersData = await fetchUsers(forceRefresh, currentLimit);
+            const usersData = await fetchUsers(forceRefresh, count);
             setUsers(usersData);
-            setHasMore(usersData.length === currentLimit);
+            setHasMore(usersData.length === count);
         } catch (error) {
             console.error("Error fetching users: ", error);
             toast.error("Could not fetch users.");

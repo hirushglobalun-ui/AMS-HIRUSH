@@ -80,8 +80,13 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ---
 
-## 4. Security Rules & Protection
+---
 
-1. **No Sensitive Private Keys in Public Variables:** Never prefix database service account private keys or backend administrative secrets with `NEXT_PUBLIC_`.
-2. **Firebase Rules Enforcement:** Public client Firebase keys are intended for browser access; data access is securely guarded by Firestore Security Rules (`firestore.rules`).
-3. **Build Fallbacks:** During automated CI/CD builds where `.env` is omitted, the application uses safe build placeholders to successfully pre-render static shells without leaking or failing.
+## 4. Security Rules & Production Credential Rotation
+
+1. **Firestore Security Rules**: Firestore Security Rules enforce authentication and role-based authorization for the single-company AMS deployment. Data access is never governed solely by the Firebase Web API key.
+2. **Firebase API Key Restrictions**: The Firebase Web API Key (`NEXT_PUBLIC_FIREBASE_API_KEY`) is a client-side identifier. In the Google Cloud Console (Credentials section), configure HTTP Referrer restrictions to limit usage strictly to your authorized production domain (e.g. `https://ams.hirushglobal.com/*`) and add the domain to Firebase Authentication → Authorized Domains.
+3. **Gmail App Password Rotation**: Generate a new Gmail/Google Workspace App Password (`GMAIL_APP_PASS`) and revoke the previously exposed password before production deployment. Ensure it is only read via `process.env.GMAIL_APP_PASS` server-side.
+4. **Cloudinary API Secret Protection**: The Cloudinary API Secret (`CLOUDINARY_API_SECRET`) is strictly server-only, utilized exclusively by `/api/upload`. It is never prefixed with `NEXT_PUBLIC_` and never returned in API payloads or client bundles. Rotate this secret if it was ever exposed in development.
+5. **No Tracked Secrets**: Real `.env` files are strictly excluded from Git tracking via `.gitignore`. The repository only tracks `.env.example` containing safe, empty placeholders.
+

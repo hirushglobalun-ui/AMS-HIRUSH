@@ -19,6 +19,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // Security: Maximum file size limit (10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'File size exceeds maximum allowed limit of 10MB' },
+        { status: 400 }
+      );
+    }
+
+    // Security: Whitelist allowed MIME types (images and business documents)
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/gif',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/csv',
+      'text/plain'
+    ];
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Unsupported file type. Only standard images (JPEG, PNG, WebP) and documents (PDF, DOCX, XLSX, CSV) are permitted.' },
+        { status: 400 }
+      );
+    }
+
+    // Security: Sanitize folder name against directory traversal
+    const safeFolder = (formData.get('folder') as string || 'hirush_ams').replace(/[^a-zA-Z0-9_-]/g, '_');
+
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
     const apiKey = process.env.CLOUDINARY_API_KEY;
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -26,7 +60,7 @@ export async function POST(req: Request) {
     if (!cloudName || !apiKey || !apiSecret) {
       return NextResponse.json(
         { 
-          error: 'Cloudinary credentials missing in .env (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)' 
+          error: 'Cloudinary server credentials missing in environment' 
         },
         { status: 500 }
       );
@@ -43,7 +77,7 @@ export async function POST(req: Request) {
     const result = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder,
+          folder: safeFolder,
           resource_type: resourceType,
           public_id: `${Date.now()}_${cleanFileName}`
         },
@@ -60,8 +94,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      url: result.secure_url,
-      publicId: result.public_id
+      url: result.secure_url
     });
   } catch (error: any) {
     console.error('Cloudinary upload error:', error);

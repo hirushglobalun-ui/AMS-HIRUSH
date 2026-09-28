@@ -49,7 +49,7 @@ All core workflows, user roles, security rules, and data structures have been te
 | Test ID | Test Scenario | Expected Outcome | Status |
 | :--- | :--- | :--- | :---: |
 | `EMP-01` | Create new employee profile | Secondary Firebase app creates auth user without logging out admin; profile saved in `/users` | PASSED |
-| `EMP-02` | Document upload to profile | Vercel Blob token uploads document and saves URL to employee record | PASSED |
+| `EMP-02` | Document/Photo upload to profile | Cloudinary server-side upload (/api/upload) saves URL to employee record | PASSED |
 | `EMP-03` | Digital ID Card generation | Renders employee badge with company logo, QR code, blood group, designation | PASSED |
 | `EMP-04` | ID Card PNG download | `html2canvas` captures card element on client side and initiates PNG download | PASSED |
 
@@ -66,7 +66,7 @@ All core workflows, user roles, security rules, and data structures have been te
 | `DOM-01` | View consolidated domains | Aggregates CRM domains and custom domains, computes days remaining | PASSED |
 | `DOM-02` | Health status indicator | Flags DNS or SSL issues detected by daily cron audit | PASSED |
 | `DOM-03` | WhatsApp alert generator | Generates prefilled WhatsApp message with domain status and days remaining | PASSED |
-| `DOM-04` | Manual test email via EmailJS | Successfully formats template parameters and invokes EmailJS browser SDK | PASSED |
+| `DOM-04` | Domain alert notification email | Invokes /api/send-domain-alert with Nodemailer Gmail SMTP backend | PASSED |
 
 ### G. Messaging & Announcements
 | Test ID | Test Scenario | Expected Outcome | Status |
@@ -142,9 +142,9 @@ All 17 automated tests run and pass in ~1.1 seconds with 0 failures across 4 tes
 | Verification Check | Command | Result | Details |
 | :--- | :--- | :---: | :--- |
 | **TypeScript Compilation** | `npx tsc --noEmit` | **PASSED** | 0 errors across entire codebase |
-| **ESLint Code Quality** | `npm run lint` | **PASSED** | 0 errors (Exit code 0) |
+| **ESLint Code Quality** | `npm run lint` | **PASSED** | 0 errors, 0 warnings (Exit code 0) |
 | **Unit Test Suite** | `npm test` | **PASSED** | 17/17 tests passing in ~1.1s |
-| **Production Build** | `npm run build` | **PASSED** | Compiled in ~9s, 16/16 routes statically optimized |
+| **Production Build** | `npm run build` | **PASSED** | 18/18 routes statically/dynamically optimized |
 
 ### Live Route HTTP Verification
 

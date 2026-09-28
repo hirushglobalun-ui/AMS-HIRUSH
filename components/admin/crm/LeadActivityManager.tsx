@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Calendar as CalendarIcon, CheckCircle, Circle, Trash2, Edit2, ChevronLeft, ChevronRight, List, Phone, Mail, FileText, Users, Check } from 'lucide-react';
 import { LeadActivity, ActivityType, Lead } from '../../../types';
@@ -26,21 +26,21 @@ export const LeadActivityManager: React.FC<LeadActivityManagerProps> = ({ leadId
     scheduledAt: new Date().toISOString().slice(0, 16), // YYYY-MM-DDThh:mm format
   });
 
-  useEffect(() => {
-    loadActivities();
-  }, [leadId]);
-
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchLeadActivities(leadId);
       setActivities(data);
-    } catch (error) {
+    } catch {
       toast.error('Failed to load activities');
     } finally {
       setLoading(false);
     }
-  };
+  }, [leadId]);
+
+  useEffect(() => {
+    loadActivities();
+  }, [loadActivities]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

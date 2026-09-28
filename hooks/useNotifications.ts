@@ -63,17 +63,21 @@ export const useNotifications = (user: User, activeTab: string) => {
         }
     };
 
+    const userId = user?.id;
+    const userRole = user?.role;
+    const userDept = user?.department ? user.department.trim() : '';
+
     // Main notification fetcher and message listener (NO activeTab dependency to prevent spam loops)
     useEffect(() => {
-        if (!user) return;
+        if (!userId) return;
 
         const unsubscribers: (() => void)[] = [];
         const dismissedSet = getDismissedSet();
         const readSet = getReadSet();
 
         const checkDomainExpiries = async () => {
-            const isUserAdminOrHR = user.role === Role.ADMIN || user.role === Role.HR;
-            const isUserSales = user.department && user.department.toLowerCase() === 'sales';
+            const isUserAdminOrHR = userRole === Role.ADMIN || userRole === Role.HR;
+            const isUserSales = userDept.toLowerCase() === 'sales';
             
             if (!isUserAdminOrHR && !isUserSales) return;
 
@@ -83,7 +87,7 @@ export const useNotifications = (user: User, activeTab: string) => {
                 
                 let qLeads = query(leadsRef);
                 if (!isUserAdminOrHR && isUserSales) {
-                    qLeads = query(leadsRef, where('assignedTo', '==', user.id));
+                    qLeads = query(leadsRef, where('assignedTo', '==', userId));
                 }
 
                 const [leadsSnap, customSnap] = await Promise.all([
@@ -203,7 +207,7 @@ export const useNotifications = (user: User, activeTab: string) => {
         checkDomainExpiries();
 
         const handleNewMessage = (data: any, type: 'message', docId: string | undefined, isHistory: boolean) => {
-            if (data.senderId === user.id) return;
+            if (data.senderId === userId) return;
 
             const notificationId = data.conversationId || data.department || `dm_${data.participants?.sort().join('_')}` || docId || `msg_${Date.now()}`;
             const time = data.createdAt?.seconds || data.timestamp?.seconds || 0;
@@ -268,14 +272,11 @@ export const useNotifications = (user: User, activeTab: string) => {
                     const data = change.doc.data();
                     const msg: any = { id: change.doc.id, ...data };
 
-                    const userDept = user.department ? user.department.trim() : '';
-                    const userRole = user.role;
-
                     if (
                         msg.recipient === 'all' ||
                         (typeof msg.recipient === 'string' && msg.recipient === userDept) ||
                         (typeof msg.recipient === 'string' && msg.recipient === userRole) ||
-                        (Array.isArray(msg.recipient) && msg.recipient.includes(user.id))
+                        (Array.isArray(msg.recipient) && msg.recipient.includes(userId))
                     ) {
                         handleNewMessage(msg, 'message', change.doc.id, initialMessages);
                     }
@@ -287,7 +288,7 @@ export const useNotifications = (user: User, activeTab: string) => {
         return () => {
             unsubscribers.forEach(unsub => unsub());
         };
-    }, [user.id, user.department, user.role, getDismissedSet, getReadSet]);
+    }, [userId, userDept, userRole, getDismissedSet, getReadSet]);
 
     // Handle messages tab active: mark chat messages as read
     useEffect(() => {

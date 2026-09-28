@@ -81,7 +81,7 @@ All detailed system, architecture, environment, and verification documentation i
    npm install
    ```
 
-3. Configure environment variables in `.env` (refer to [ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/ENVIRONMENT.md)):
+3. Configure environment variables in `.env` (refer to [documentation/ENVIRONMENT.md](file:///c:/Users/HP/Downloads/hirushGlobalAMS-main%20%283%29/ams/documentation/ENVIRONMENT.md)):
    ```env
    NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com

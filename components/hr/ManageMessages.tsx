@@ -43,8 +43,11 @@ const ManageMessages: React.FC = () => {
         fetchUsers();
     }, []);
 
+    const adminId = admin?.id;
+    const adminRole = admin?.role;
+
     useEffect(() => {
-        if (!admin) return;
+        if (!adminId) return;
         const messagesRef = collection(db, 'messages');
         const q = query(messagesRef, orderBy('timestamp', 'desc'));
 
@@ -59,12 +62,11 @@ const ManageMessages: React.FC = () => {
                 // 2. Sent to admin's role
                 // 3. Sent to admin individually
                 // 4. Sent BY the admin (so they can see their history)
-                const userRole = admin.role;
                 if (
                     msg.recipient === 'all' ||
-                    (typeof msg.recipient === 'string' && msg.recipient === userRole) ||
-                    (Array.isArray(msg.recipient) && msg.recipient.includes(admin.id)) ||
-                    msg.senderId === admin.id
+                    (typeof msg.recipient === 'string' && msg.recipient === adminRole) ||
+                    (Array.isArray(msg.recipient) && msg.recipient.includes(adminId)) ||
+                    msg.senderId === adminId
                 ) {
                     msgs.push(msg);
                 }
@@ -88,7 +90,7 @@ const ManageMessages: React.FC = () => {
         });
 
         return () => unsubscribe();
-    }, [admin.id, admin.role]);
+    }, [adminId, adminRole]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

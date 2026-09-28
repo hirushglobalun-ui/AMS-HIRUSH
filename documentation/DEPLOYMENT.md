@@ -118,11 +118,58 @@ If deploying within the Google Cloud / Firebase ecosystem:
 
 ---
 
-## 6. Post-Deployment Verification Checklist
+---
+
+## 6. Pre-Deployment Security & Credential Checklist
+
+Complete every step before cutover:
+* [ ] **Rotate Gmail App Password**: Revoke any existing Google App Password and generate a new 16-character password in Google Account Security. Populate `GMAIL_APP_PASS` in the hosting environment variables.
+* [ ] **Rotate Cloudinary API Secret**: Generate or verify fresh Cloudinary credentials (`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME`). Set strictly in server environment.
+* [ ] **Firebase Authorized Domains**: In Firebase Console → Authentication → Settings → Authorized domains, add your production domain (e.g. `ams.hirushglobal.com`).
+* [ ] **Google Cloud API Key Restrictions**: In Google Cloud Console → APIs & Services → Credentials, restrict `NEXT_PUBLIC_FIREBASE_API_KEY` with HTTP Referrer restrictions to `https://ams.hirushglobal.com/*`.
+* [ ] **Deploy Firestore Security Rules**: Deploy the updated rules enforcing role-based permissions and initial self-setup:
+  ```bash
+  firebase deploy --only firestore:rules
+  ```
+  *(Note: Hirush Global AMS operates as a secure single-company enterprise deployment).*
+* [ ] **Configure Production Environment Variables**: Ensure all required keys from `.env.example` are populated in your hosting provider (Vercel / PM2 / Cloud Run).
+* [ ] **Configure DNS & SSL**: Verify SSL/TLS termination is active (HTTPS is mandatory for WebAuthn and Geolocation).
+
+---
+
+## 7. Deployment Procedure
+
+```bash
+# 1. Install production dependencies
+npm install --frozen-lockfile
+
+# 2. Run quality checks
+npm test
+npx tsc --noEmit
+npm run lint
+
+# 3. Build production bundle
+npm run build
+
+# 4. Start production server
+npm run start
+```
+
+---
+
+## 8. Post-Deployment Verification Checklist
 
 * [ ] SSL Certificate active (HTTPS is mandatory for WebAuthn and Geolocation).
-* [ ] PWA install prompt appears and installs to home screen / desktop.
-* [ ] Fingerprint / biometric prompt triggers on phone/laptop.
-* [ ] Office GPS distance calculation validates accurately.
+* [ ] Login flow operates with email/password.
+* [ ] First-time setup creates initial Super Admin safely (if fresh installation).
+* [ ] Protected route redirection works for unauthenticated users.
+* [ ] Attendance check-in / check-out records accurately.
+* [ ] Office GPS distance calculation validates accurately against office geofence.
+* [ ] Leave requests can be submitted and approved/rejected by Admin/HR.
+* [ ] CRM leads and activities can be viewed, created, and updated.
+* [ ] Profile photo upload via `/api/upload` uploads securely and updates avatar.
 * [ ] Real-time messages update without page reload.
+* [ ] PWA install prompt appears and service worker registers successfully.
 * [ ] Digital ID card downloads as PNG image.
+* [ ] Server logs confirm no unhandled exceptions or secret leakage.
+

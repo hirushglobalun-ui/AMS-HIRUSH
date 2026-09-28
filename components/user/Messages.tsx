@@ -47,8 +47,12 @@ const Messages: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
+  const userId = user?.id;
+  const userRole = user?.role;
+  const userDept = user?.department ? user.department.trim() : '';
+
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     const messagesRef = collection(db, 'messages');
     const q = query(messagesRef, orderBy('timestamp', 'desc'));
 
@@ -58,16 +62,13 @@ const Messages: React.FC = () => {
         const data = doc.data();
         const msg = { id: doc.id, ...data } as Message;
 
-        const userDept = user.department ? user.department.trim() : '';
-        const userRole = user.role;
-
         // Filter messages
         if (
           msg.recipient === 'all' ||
           (typeof msg.recipient === 'string' && msg.recipient === userDept) ||
           (typeof msg.recipient === 'string' && msg.recipient === userRole) ||
-          (Array.isArray(msg.recipient) && msg.recipient.includes(user.id)) ||
-          msg.senderId === user.id
+          (Array.isArray(msg.recipient) && msg.recipient.includes(userId)) ||
+          msg.senderId === userId
         ) {
           msgs.push(msg);
         }
@@ -93,7 +94,7 @@ const Messages: React.FC = () => {
     });
 
     return () => unsubscribe();
-  }, [user?.id, user?.role, user?.department]);
+  }, [userId, userRole, userDept]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

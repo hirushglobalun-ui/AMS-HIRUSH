@@ -33,9 +33,12 @@ const HRSettings: React.FC = () => {
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [mapInitialized, setMapInitialized] = useState(false);
     const mapRef = useRef<any>(null);
     const markerRef = useRef<any>(null);
+    const settingsRef = useRef(settings);
+    useEffect(() => {
+        settingsRef.current = settings;
+    }, [settings]);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -59,47 +62,20 @@ const HRSettings: React.FC = () => {
         fetchSettings();
     }, []);
 
-    // Initialize Leaflet Map
     useEffect(() => {
         if (loading) return;
 
-        // Load Leaflet CSS and JS dynamically
-        const loadLeaflet = async () => {
-            // Check if already loaded
-            if ((window as any).L) {
-                initializeMap();
-                return;
-            }
-
-            // Load CSS
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-            link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-            link.crossOrigin = '';
-            document.head.appendChild(link);
-
-            // Load JS
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-            script.crossOrigin = '';
-            script.onload = () => {
-                initializeMap();
-            };
-            document.head.appendChild(script);
-        };
-
         const initializeMap = () => {
             const L = (window as any).L;
-            if (!L || mapInitialized) return;
+            if (!L || mapRef.current) return;
 
             const mapElement = document.getElementById('officeMap');
             if (!mapElement) return;
 
             // Default center (use saved location or default to a world view)
-            const defaultLat = (settings.latitude && !isNaN(settings.latitude)) ? settings.latitude : 51.505;
-            const defaultLng = (settings.longitude && !isNaN(settings.longitude)) ? settings.longitude : -0.09;
+            const currentSettings = settingsRef.current;
+            const defaultLat = (currentSettings.latitude && !isNaN(currentSettings.latitude)) ? currentSettings.latitude : 51.505;
+            const defaultLng = (currentSettings.longitude && !isNaN(currentSettings.longitude)) ? currentSettings.longitude : -0.09;
             const hasValidLocation = defaultLat !== 51.505 || defaultLng !== -0.09;
             const defaultZoom = hasValidLocation ? 15 : 2;
 
@@ -113,12 +89,12 @@ const HRSettings: React.FC = () => {
             }).addTo(map);
 
             // Add marker if location is set
-            if (settings.latitude && settings.longitude && !isNaN(settings.latitude) && !isNaN(settings.longitude) && hasValidLocation) {
-                const marker = L.marker([settings.latitude, settings.longitude], { draggable: true }).addTo(map);
+            if (currentSettings.latitude && currentSettings.longitude && !isNaN(currentSettings.latitude) && !isNaN(currentSettings.longitude) && hasValidLocation) {
+                const marker = L.marker([currentSettings.latitude, currentSettings.longitude], { draggable: true }).addTo(map);
                 
                 // Add circle for radius
-                const circle = L.circle([settings.latitude, settings.longitude], {
-                    radius: settings.radius,
+                const circle = L.circle([currentSettings.latitude, currentSettings.longitude], {
+                    radius: currentSettings.radius,
                     color: '#3b82f6',
                     fillColor: '#3b82f6',
                     fillOpacity: 0.2
@@ -156,7 +132,7 @@ const HRSettings: React.FC = () => {
                 // Add new marker
                 const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
                 const circle = L.circle([lat, lng], {
-                    radius: settings.radius,
+                    radius: settingsRef.current.radius,
                     color: '#3b82f6',
                     fillColor: '#3b82f6',
                     fillOpacity: 0.2
@@ -176,7 +152,33 @@ const HRSettings: React.FC = () => {
             });
 
             mapRef.current = map;
-            setMapInitialized(true);
+        };
+
+        // Load Leaflet CSS and JS dynamically
+        const loadLeaflet = async () => {
+            // Check if already loaded
+            if ((window as any).L) {
+                initializeMap();
+                return;
+            }
+
+            // Load CSS
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+            link.crossOrigin = '';
+            document.head.appendChild(link);
+
+            // Load JS
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+            script.crossOrigin = '';
+            script.onload = () => {
+                initializeMap();
+            };
+            document.head.appendChild(script);
         };
 
         loadLeaflet();

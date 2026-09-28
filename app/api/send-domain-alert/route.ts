@@ -17,12 +17,24 @@ export async function POST(req: Request) {
 
     const gmailUser = process.env.GMAIL_USER;
     const gmailPass = process.env.GMAIL_APP_PASS;
-    const recipient = toEmail || process.env.ALERT_TO_EMAIL || gmailUser;
 
     if (!gmailUser || !gmailPass) {
       return NextResponse.json(
-        { error: 'Gmail credentials not configured in environment variables (GMAIL_USER, GMAIL_APP_PASS)' },
+        { error: 'Email service credentials not configured in server environment' },
         { status: 500 }
+      );
+    }
+
+    // Security: Validate recipient email format to prevent header injection or open relay
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let recipient = process.env.ALERT_TO_EMAIL || gmailUser;
+
+    if (toEmail && typeof toEmail === 'string' && emailRegex.test(toEmail.trim())) {
+      recipient = toEmail.trim();
+    } else if (toEmail) {
+      return NextResponse.json(
+        { error: 'Invalid recipient email address format' },
+        { status: 400 }
       );
     }
 
@@ -35,7 +47,7 @@ export async function POST(req: Request) {
     });
 
     const isIssue = dnsStatus === 'Issue Detected' || sslStatus === 'Issue Detected';
-    const emailSubject = `⚠️ Domain Health Notice: ${projectName || domainDetail} [${isIssue ? 'ACTION REQUIRED' : 'TEST ALERT'}]`;
+    const emailSubject = `⚠️ Domain Health Notice: ${projectName || domainDetail || 'Domain Check'} [${isIssue ? 'ACTION REQUIRED' : 'TEST ALERT'}]`;
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 600px; background-color: #ffffff;">
@@ -64,7 +76,7 @@ export async function POST(req: Request) {
       </div>
     `;
 
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: `"Hirush AMS Monitor" <${gmailUser}>`,
       to: recipient,
       subject: emailSubject,
@@ -73,13 +85,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      messageId: info.messageId,
       recipient
     });
   } catch (error: any) {
     console.error('Error sending domain alert via Nodemailer:', error);
     return NextResponse.json(
-      { error: error?.message || 'Failed to dispatch email' },
+      { error: 'Failed to dispatch email alert. Please verify mail service configuration.' },
       { status: 500 }
     );
   }
