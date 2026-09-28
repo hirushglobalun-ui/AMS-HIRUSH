@@ -218,10 +218,144 @@ export const useUserHomeData = (user: User | null) => {
     return 'not_registered' as const;
   }, [user]);
 
+  const validateLocation = async (): Promise<{
+    valid: boolean;
+    isWFH: boolean;
+    wfhStatus?: 'approved' | 'pending';
+    coords?: { latitude: number; longitude: number; accuracy?: number };
+  }> => {
+    try {
+      const todayStr = getLocalDateString();
+      const settingsRef = doc(db, 'settings', 'general');
+      const settingsSnap = await getDoc(settingsRef);
+
+      if (!settingsSnap.exists()) return { valid: true, isWFH: false };
+      const officeLoc = settingsSnap.data().officeLocation;
+      if (!officeLoc || !officeLoc.enabled) return { valid: true, isWFH: false };
+
+      if (user && officeLoc.bypassDepartments && user.department && officeLoc.bypassDepartments.includes(user.department)) {
+        return { valid: true, isWFH: false };
+      }
+
+      return new Promise((resolve) => {
+        if (typeof window === 'undefined' || !navigator.geolocation) {
+          toast.error('Geolocation is required for attendance.');
+          resolve({ valid: false, isWFH: false });
+          return;
+        }
+
+        toast.loading('Verifying location...', { id: 'loc-check' });
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const userAccuracy = position.coords.accuracy;
+            const dist = calculateDistance(userLat, userLng, officeLoc.latitude, officeLoc.longitude);
+            toast.dismiss('loc-check');
+
+            if (dist <= officeLoc.radius) {
+              resolve({
+                valid: true,
+                isWFH: false,
+                coords: { latitude: userLat, longitude: userLng, accuracy: userAccuracy },
+              });
+            } else {
+              if (!user?.id) {
+                toast.error('User identity missing.');
+                resolve({ valid: false, isWFH: false });
+                return;
+              }
+              const wfhInfo = await getTodayWFHStatus(user.id, todayStr);
+              if (wfhInfo.hasWFH && wfhInfo.isApproved) {
+                toast.success('Location verified (Work From Home).');
+                resolve({
+                  valid: true,
+                  isWFH: true,
+                  wfhStatus: 'approved',
+                  coords: { latitude: userLat, longitude: userLng, accuracy: userAccuracy },
+                });
+              } else if (wfhInfo.hasWFH && wfhInfo.isPending) {
+                toast.success('Home location captured (WFH pending approval).');
+                resolve({
+                  valid: true,
+                  isWFH: true,
+                  wfhStatus: 'pending',
+                  coords: { latitude: userLat, longitude: userLng, accuracy: userAccuracy },
+                });
+              } else {
+                toast.error(`You are away from office (${Math.round(dist)}m). You must be at office or have approved WFH.`, { duration: 6000 });
+                resolve({ valid: false, isWFH: false });
+              }
+            }
+          },
+          (error) => {
+            toast.dismiss('loc-check');
+            let msg = 'Could not get your location.';
+            if (error.code === 1) msg = 'Location permission denied. Please enable GPS.';
+            else if (error.code === 2) msg = 'Location unavailable. Please turn on device GPS.';
+            else if (error.code === 3) msg = 'Location request timed out. Please try again.';
+            toast.error(msg);
+            resolve({ valid: false, isWFH: false });
+          },
+          { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
+        );
+      });
+    } catch {
+      return { valid: true, isWFH: false };
+    }
+  };
+
+  const verifyBiometricForAttendance = async (): Promise<boolean> => {
+    const isBioActive = biometricSettings.enabled && biometricSettings.verificationMode !== 'location_only';
+    if (!isBioActive || user?.biometricExempt) return true;
+
+    const devices = user?.biometricDevices || (user?.biometricDevice ? [user.biometricDevice] : []);
+    if (devices.length === 0) {
+      toast.error("Phone biometric not registered. Please register biometric in Attendance page.", { duration: 5000 });
+      return false;
+    }
+
+    const approvedDevices = devices.filter((d) => d.status === 'approved');
+    if (approvedDevices.length === 0) {
+      toast.error('Registered device pending approval. Please contact HR.', { duration: 5000 });
+      return false;
+    }
+
+    const currentDeviceId = getLocalDeviceId();
+    const matchingDevice = approvedDevices.find((d) => d.deviceId === currentDeviceId);
+    if (!matchingDevice) {
+      toast.error(`Unauthorized Device: Must mark attendance from approved phone (${approvedDevices[0].deviceName}).`, { duration: 6000 });
+      return false;
+    }
+
+    toast.loading('Touch fingerprint sensor...', { id: 'bio-check' });
+    const bioResult = await verifyBiometricPresence(approvedDevices.map((d) => d.credentialId));
+    toast.dismiss('bio-check');
+
+    if (!bioResult.success) {
+      toast.error(bioResult.error || 'Biometric verification failed.');
+      return false;
+    }
+    return true;
+  };
+
   const handleAction = async (type: 'checkin' | 'checkout') => {
     if (!user) return;
     setProcessingAction(type);
     try {
+      const locResult = await validateLocation();
+      if (!locResult.valid) {
+        setProcessingAction(null);
+        return;
+      }
+
+      const isBioValid = await verifyBiometricForAttendance();
+      if (!isBioValid) {
+        setProcessingAction(null);
+        return;
+      }
+
       const nowStr = new Date().toLocaleTimeString('en-GB');
       const todayStr = getLocalDateString();
       const isBioActive = biometricSettings.enabled && biometricSettings.verificationMode !== 'location_only';
@@ -233,25 +367,39 @@ export const useUserHomeData = (user: User | null) => {
           checkOut: null,
           biometricVerified: isBioActive,
           deviceId: getLocalDeviceId() || '',
-          isWFH: false,
+          isWFH: locResult.isWFH,
+          ...(locResult.wfhStatus ? { wfhStatus: locResult.wfhStatus } : {}),
+          ...(locResult.coords ? { location: locResult.coords } : {}),
         };
 
         if (todayRecord) {
-          const updates: Partial<AttendanceRecord> = { sessions: [...(todayRecord.sessions || []), newSession] };
+          const updates: Partial<AttendanceRecord> = { 
+            sessions: [...(todayRecord.sessions || []), newSession],
+            ...(locResult.isWFH ? { isWFH: true, ...(locResult.wfhStatus ? { wfhStatus: locResult.wfhStatus } : {}) } : {})
+          };
           await updateDoc(doc(db, 'attendance', todayRecord.id), updates);
           setTodayRecord({ ...todayRecord, ...updates });
           setActiveSession(newSession);
         } else {
-          const newRecData = { userId: user.id, date: todayStr, sessions: [newSession], totalHours: 0, isWFH: false };
+          const newRecData = { 
+            userId: user.id, 
+            date: todayStr, 
+            sessions: [newSession], 
+            totalHours: 0, 
+            isWFH: locResult.isWFH || false,
+            ...(locResult.wfhStatus ? { wfhStatus: locResult.wfhStatus } : {})
+          };
           const docRef = await addDoc(collection(db, 'attendance'), newRecData);
           setTodayRecord({ id: docRef.id, ...newRecData });
           setActiveSession(newSession);
         }
-        toast.success('Checked in successfully!');
+        toast.success(`Checked in successfully!${locResult.isWFH ? ' (WFH)' : ''}`);
       } else {
         if (!todayRecord || !activeSession) return;
         const updatedSessions = (todayRecord.sessions || []).map((s) =>
-          s.id === activeSession.id || !s.checkOut ? { ...s, checkOut: nowStr } : s
+          s.id === activeSession.id || !s.checkOut 
+            ? { ...s, checkOut: nowStr, ...(locResult.coords ? { checkOutLocation: locResult.coords } : {}) } 
+            : s
         );
         const finalHours = calculateTotalHours(todayRecord.date, updatedSessions);
         await updateDoc(doc(db, 'attendance', todayRecord.id), { sessions: updatedSessions, totalHours: finalHours });
