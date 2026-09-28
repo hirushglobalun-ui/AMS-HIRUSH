@@ -24,6 +24,8 @@ const ManageMessages: React.FC = () => {
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [receivedMessages, setReceivedMessages] = useState<Message[]>([]);
     const [viewingMessage, setViewingMessage] = useState<Message | null>(null);
+    const [sendEmailNotification, setSendEmailNotification] = useState(true);
+    const [sending, setSending] = useState(false);
 
     useEffect(() => {
         // Fetch users for individual selection
@@ -129,9 +131,67 @@ const ManageMessages: React.FC = () => {
             senderName: admin.name || 'HR'
         };
 
+        setSending(true);
         try {
             await addDoc(collection(db, 'messages'), newMessage);
-            toast.success("Message sent successfully!");
+
+            // Dispatch branded emails if notification toggle is enabled
+            if (sendEmailNotification) {
+                let targetEmails: string[] = [];
+                let targetLabel = 'All Employees';
+
+                if (recipientTypeValue === 'all') {
+                    targetEmails = users
+                        .filter(u => u.status !== 'Inactive' && u.email)
+                        .map(u => u.email.trim());
+                    targetLabel = 'All Employees';
+                } else if (recipientTypeValue === 'department') {
+                    const deptName = typeof recipient === 'string' ? recipient : '';
+                    targetEmails = users
+                        .filter(u => u.status !== 'Inactive' && u.department === deptName && u.email)
+                        .map(u => u.email.trim());
+                    targetLabel = `Department: ${deptName}`;
+                } else if (recipientTypeValue === 'individual') {
+                    const selectedIds = Array.isArray(recipient) ? recipient : [recipient];
+                    targetEmails = users
+                        .filter(u => selectedIds.includes(u.id) && u.email)
+                        .map(u => u.email.trim());
+                    targetLabel = 'Direct Message';
+                }
+
+                if (targetEmails.length > 0) {
+                    try {
+                        const emailRes = await fetch('/api/send-message-email', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                title: newMessage.title,
+                                content: newMessage.content,
+                                imageUrl: newMessage.imageUrl,
+                                senderName: admin.name || 'Hirush Global HR',
+                                senderRole: admin.role || 'HR',
+                                recipientType: recipientTypeValue,
+                                targetLabel,
+                                recipients: targetEmails
+                            })
+                        });
+
+                        if (emailRes.ok) {
+                            toast.success(`Message sent and emails dispatched to ${targetEmails.length} recipient(s)!`);
+                        } else {
+                            toast.success("Message sent to AMS (email notification service reported an error).");
+                        }
+                    } catch (emailErr) {
+                        console.error("Failed to call email API:", emailErr);
+                        toast.success("Message sent to AMS successfully.");
+                    }
+                } else {
+                    toast.success("Message sent to AMS (no active email addresses found for recipient).");
+                }
+            } else {
+                toast.success("Message sent successfully!");
+            }
+
             form.reset();
             setRecipientType('all');
             setSelectedUsers([]);
@@ -139,6 +199,8 @@ const ManageMessages: React.FC = () => {
         } catch (error) {
             console.error("Error sending message:", error);
             toast.error("Failed to send message.");
+        } finally {
+            setSending(false);
         }
     };
 
@@ -295,13 +357,37 @@ const ManageMessages: React.FC = () => {
                             </div>
                         </div>
 
+                    {/* Email Notification Option */}
+                    <div className="pt-1">
+                        <label className="flex items-center gap-3 p-3 bg-blue-50/60 dark:bg-slate-800/60 border border-blue-100 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={sendEmailNotification}
+                                onChange={(e) => setSendEmailNotification(e.target.checked)}
+                                className="w-4 h-4 text-primary rounded border-slate-300 focus:ring-primary cursor-pointer"
+                            />
+                            <div className="flex flex-col">
+                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <Mail size={16} className="text-primary" />
+                                    Send Email Notification to Recipients
+                                </span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">
+                                    Dispatches a branded Hirush Global email directly to employee inboxes
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+
                     <div className="pt-2">
                         <button
                             type="submit"
-                            className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all active:scale-[0.98] cursor-pointer"
+                            disabled={sending}
+                            className={`w-full flex items-center justify-center gap-2 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold shadow-lg shadow-primary/25 transition-all active:scale-[0.98] ${
+                                sending ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+                            }`}
                         >
-                            <Send size={18} />
-                            Send Message
+                            <Send size={18} className={sending ? 'animate-pulse' : ''} />
+                            {sending ? 'Sending & Dispatching Emails...' : 'Send Message'}
                         </button>
                     </div>
                 </form>
