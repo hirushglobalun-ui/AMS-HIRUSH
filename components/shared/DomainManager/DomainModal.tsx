@@ -96,7 +96,7 @@ export const DomainModal: React.FC<DomainModalProps> = ({
             rows={3}
             value={formData.remark}
             onChange={onChange}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700 text-sm resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 font-medium text-sm transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm resize-none"
             placeholder="Add server hosting details, panel URLs or notes..."
           />
         </div>

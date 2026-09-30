@@ -59,7 +59,7 @@ export const LeadFormProjectSection: React.FC<LeadFormProjectSectionProps> = ({
           name="assignedTo"
           value={formData.assignedTo || ''}
           onChange={onChange}
-          className="w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700 border"
+          className="w-full max-w-full truncate px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
         >
           <option value="">Unassigned</option>
           {salesUsers.map((user) => (
@@ -78,7 +78,7 @@ export const LeadFormProjectSection: React.FC<LeadFormProjectSectionProps> = ({
           <select
             value={departmentInput}
             onChange={(e) => setDepartmentInput(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700 border"
+            className="flex-1 max-w-full truncate px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
           >
             <option value="">Select Department...</option>
             <option value="SEO">SEO</option>
@@ -125,7 +125,7 @@ export const LeadFormProjectSection: React.FC<LeadFormProjectSectionProps> = ({
           rows={3}
           value={formData.remark}
           onChange={onChange}
-          className="w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700 border resize-none"
+          className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm resize-none"
           placeholder="Any additional remarks..."
         />
       </div>

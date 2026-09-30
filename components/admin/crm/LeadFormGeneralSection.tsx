@@ -42,7 +42,7 @@ export const LeadFormGeneralSection: React.FC<LeadFormGeneralSectionProps> = ({
             name="category"
             value={formData.category}
             onChange={onChange}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
+            className="w-full max-w-full truncate px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
             required
           >
             <option value={LeadCategory.COMPANY}>Company Lead (Active Business)</option>
@@ -67,7 +67,7 @@ export const LeadFormGeneralSection: React.FC<LeadFormGeneralSectionProps> = ({
             name="status"
             value={formData.status}
             onChange={onChange}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all outline-none"
+            className="w-full max-w-full truncate px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
             required
           >
             {Object.values(LeadStatus).map((status) => (

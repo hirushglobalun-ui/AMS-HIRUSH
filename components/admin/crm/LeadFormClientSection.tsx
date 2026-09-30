@@ -70,7 +70,7 @@ export const LeadFormClientSection: React.FC<LeadFormClientSectionProps> = ({
               name="clientType"
               value={formData.clientType}
               onChange={onChange}
-              className="w-full px-4 py-3 rounded-xl border-slate-200 bg-slate-50/50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700"
+              className="w-full max-w-full truncate px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
             >
               {Object.values(ClientType).map((type) => (
                 <option key={type} value={type}>{type}</option>
@@ -112,7 +112,7 @@ export const LeadFormClientSection: React.FC<LeadFormClientSectionProps> = ({
                           handleSaveNewCompany();
                         }
                       }}
-                      className="flex-1 px-3.5 py-2.5 rounded-lg border border-slate-300 bg-slate-50 focus:bg-white focus:border-indigo-500 text-sm font-medium text-slate-800 outline-none"
+                      className="flex-1 px-3.5 py-2.5 rounded-lg border border-slate-300 bg-white hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 text-sm font-medium text-slate-800 outline-none shadow-sm transition-all"
                     />
                     <button
                       type="button"
@@ -137,7 +137,7 @@ export const LeadFormClientSection: React.FC<LeadFormClientSectionProps> = ({
                       if (e.target.value === '__add_new__') setIsAddingCompany(true);
                       else onChange(e);
                     }}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:border-indigo-500 outline-none font-medium text-slate-700 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium text-sm transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
                   >
                     <option value="">-- Select Company --</option>
                     {companies.map((comp) => (
@@ -165,7 +165,7 @@ export const LeadFormClientSection: React.FC<LeadFormClientSectionProps> = ({
                 value={formData.clientTypeDetail || ''}
                 onChange={onChange}
                 placeholder={clientTypeConfig.placeholder}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:border-indigo-500 outline-none font-medium text-slate-700 text-sm"
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium text-sm transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
               />
             )}
             <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">

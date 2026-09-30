@@ -100,7 +100,7 @@ const FirstTimeSetup: React.FC<FirstTimeSetupProps> = ({ onSetupComplete }) => {
                         <label htmlFor="password" className="block text-sm font-medium text-slate-500 dark:text-slate-400">Password</label>
                         <input type="password" name="password" id="password" required value={formData.password} onChange={handleInputChange} className={formInputClasses} placeholder="Create a secure password" />
                     </div>
-                     <div>
+                    <div>
                         <label htmlFor="department" className="block text-sm font-medium text-slate-500 dark:text-slate-400">Department</label>
                         <input type="text" name="department" id="department" required value={formData.department} onChange={handleInputChange} className={formInputClasses} />
                     </div>

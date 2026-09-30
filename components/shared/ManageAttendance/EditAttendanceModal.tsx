@@ -139,7 +139,7 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                                         step="1"
                                         value={session.checkIn}
                                         onChange={(e) => handleSessionChange(index, 'checkIn', e.target.value)}
-                                        className="block w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                                        className="block w-full max-w-full bg-white border border-slate-300 rounded-lg text-sm px-3 py-2 outline-none hover:border-slate-400 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all font-mono shadow-sm"
                                     />
                                 </div>
                                 <div className="flex-1 w-full">
@@ -149,7 +149,7 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                                         step="1"
                                         value={session.checkOut || ''}
                                         onChange={(e) => handleSessionChange(index, 'checkOut', e.target.value)}
-                                        className="block w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                                        className="block w-full max-w-full bg-white border border-slate-300 rounded-lg text-sm px-3 py-2 outline-none hover:border-slate-400 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all font-mono shadow-sm"
                                     />
                                 </div>
                                 <button
