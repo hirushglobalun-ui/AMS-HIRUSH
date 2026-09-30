@@ -12,6 +12,7 @@ import React, {
     useState,
     useRef,
     useEffect,
+    useCallback
 } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -101,8 +102,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
     const selectedOption = options.find(
         (option) => option.value === value
     );
-
-    const updateMenuPosition = () => {
+    const updateMenuPosition = useCallback(() => {
         if (!buttonRef.current) return;
 
         const rect =
@@ -132,8 +132,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             left: rect.left,
             width: rect.width,
         });
-    };
-
+    }, [options.length]);
     useEffect(() => {
         if (!isOpen) return;
 
@@ -193,7 +192,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 true
             );
         };
-    }, [isOpen, options.length]);
+    }, [isOpen, options.length, updateMenuPosition]);
 
     return (
         <div
@@ -492,6 +491,23 @@ const UserFormModal: React.FC<
             if (name === "email") {
                 updatedValue =
                     value.toLowerCase();
+            }
+            //Account Number: only digits
+            if (name === "accountNumber") {
+                updatedValue = value.replace(/\D/g, "");
+            }
+            if (name === "accountHolderName") {
+                updatedValue = value.replace(/[^a-zA-Z\s]/g, "");
+            }
+            if (name === "aadharNumber") {
+                updatedValue = value.replace(/\D/g, "").slice(0, 12);
+            }
+
+            if (name === "panNumber") {
+                updatedValue = value
+                    .toUpperCase()
+                    .replace(/[^A-Z0-9]/g, "")
+                    .slice(0, 10);
             }
 
             // Phone numbers: digits only, maximum 10 digits
