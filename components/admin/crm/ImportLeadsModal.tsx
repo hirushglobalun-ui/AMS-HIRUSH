@@ -44,41 +44,41 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
 
   const handleDownloadTemplate = () => {
     const headers = [
-      'Project Name', 
+      'Project Name',
       'Category',
-      'First Start Date', 
-      'Work Commencement Date', 
-      'Status', 
-      'POC Name', 
-      'POC Email', 
-      'POC Phone', 
-      'Client Name', 
-      'Client Phone', 
-      'Client Email', 
-      'Client Type', 
+      'First Start Date',
+      'Work Commencement Date',
+      'Status',
+      'POC Name',
+      'POC Email',
+      'POC Phone',
+      'Client Name',
+      'Client Phone',
+      'Client Email',
+      'Client Type',
       'Client Detail / Reference',
-      'Domain Detail', 
-      'Expiry Date', 
+      'Domain Detail',
+      'Expiry Date',
       'Remark'
     ];
-    
+
     // Create an example row
     const exampleRow = [
-      'Example Website Redesign', 
+      'Example Website Redesign',
       selectedCategory,
-      '2026-06-01', 
-      '', 
-      'Pending', 
-      'Jane Doe', 
-      'jane@example.com', 
-      '+1234567890', 
-      'Acme Corporation', 
-      '+1987654321', 
-      'client@company.com', 
-      'B2B', 
+      '2026-06-01',
+      '',
+      'Pending',
+      'Jane Doe',
+      'jane@example.com',
+      '+1234567890',
+      'Acme Corporation',
+      '+1987654321',
+      'client@company.com',
+      'B2B',
       'Acme Technologies Inc.',
-      'www.example.com', 
-      '2027-06-01', 
+      'www.example.com',
+      '2027-06-01',
       'Interested in SEO too'
     ];
 
@@ -95,13 +95,13 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
     if (selectedFile) {
       const isCSV = selectedFile.type === 'text/csv' || selectedFile.name.endsWith('.csv');
       const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls');
-      
+
       if (!isCSV && !isExcel) {
         toast.error('Please upload a valid CSV or Excel file.');
         return;
       }
       setFile(selectedFile);
-      
+
       if (isCSV) {
         parseCSV(selectedFile);
       } else if (isExcel) {
@@ -137,104 +137,104 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
   };
 
   const validateAndSetLeads = (data: any[]) => {
-        const validationErrors: string[] = [];
-        const leadsToImport: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'slNo'>[] = [];
+    const validationErrors: string[] = [];
+    const leadsToImport: Omit<Lead, 'id' | 'createdAt' | 'updatedAt' | 'slNo'>[] = [];
 
-        data.forEach((rawRow, index) => {
-          const rowNum = index + 2; // +1 for 0-index, +1 for header
-          
-          // Clean row keys (trim whitespace from headers)
-          const row: any = {};
-          for (const key in rawRow) {
-             row[key.trim()] = rawRow[key];
-          }
-          
-          // Extract and stringify values safely
-          const rawProjectName = row['Project Name'];
-          const rawFirstStartDate = row['First Start Date'];
-          const rawPocName = row['POC Name'];
-          const rawClientType = row['Client Type'];
-          const rawStatus = row['Status'];
-          const rawCategory = row['Category'];
+    data.forEach((rawRow, index) => {
+      const rowNum = index + 2; // +1 for 0-index, +1 for header
 
-          // Skip completely empty rows
-          if (!rawProjectName && !rawFirstStartDate && !rawPocName && !rawClientType && !rawStatus) {
-            return;
-          }
+      // Clean row keys (trim whitespace from headers)
+      const row: any = {};
+      for (const key in rawRow) {
+        row[key.trim()] = rawRow[key];
+      }
 
-          const projectName = String(rawProjectName || '').trim();
-          const firstStartDate = String(rawFirstStartDate || '').trim();
-          const pocName = String(rawPocName || '').trim();
-          const clientTypeRaw = String(rawClientType || 'B2B').trim();
-          const statusRaw = String(rawStatus || 'Pending').trim();
-          const categoryRaw = String(rawCategory || '').trim();
+      // Extract and stringify values safely
+      const rawProjectName = row['Project Name'];
+      const rawFirstStartDate = row['First Start Date'];
+      const rawPocName = row['POC Name'];
+      const rawClientType = row['Client Type'];
+      const rawStatus = row['Status'];
+      const rawCategory = row['Category'];
 
-          // Use selectedCategory chosen in the modal dropdown for all imported leads
-          const category = selectedCategory;
+      // Skip completely empty rows
+      if (!rawProjectName && !rawFirstStartDate && !rawPocName && !rawClientType && !rawStatus) {
+        return;
+      }
 
-          // Validate Client Type (Case insensitive)
-          let clientType = ClientType.B2B;
-          const matchedClientType = Object.values(ClientType).find(c => c.toLowerCase() === clientTypeRaw.toLowerCase());
-          if (matchedClientType) {
-            clientType = matchedClientType as ClientType;
-          } else if (clientTypeRaw) {
-             validationErrors.push(`Row ${rowNum}: Invalid Client Type '${clientTypeRaw}'. Must be one of: ${Object.values(ClientType).join(', ')}.`);
-          }
+      const projectName = String(rawProjectName || '').trim();
+      const firstStartDate = String(rawFirstStartDate || '').trim();
+      const pocName = String(rawPocName || '').trim();
+      const clientTypeRaw = String(rawClientType || 'B2B').trim();
+      const statusRaw = String(rawStatus || 'Pending').trim();
+      const categoryRaw = String(rawCategory || '').trim();
 
-          // Validate Status (Case insensitive)
-          let status = LeadStatus.PENDING;
-          const matchedStatus = Object.values(LeadStatus).find(s => s.toLowerCase() === statusRaw.toLowerCase());
-          if (matchedStatus) {
-            status = matchedStatus as LeadStatus;
-          } else if (statusRaw) {
-             validationErrors.push(`Row ${rowNum}: Invalid Status '${statusRaw}'.`);
-          }
+      // Use selectedCategory chosen in the modal dropdown for all imported leads
+      const category = selectedCategory;
 
-          leadsToImport.push({
-            projectName,
-            category,
-            firstStartDate,
-            workCommencementDate: String(row['Work Commencement Date'] || row['Commencement Date'] || '').trim(),
-            status,
-            pocName,
-            pocEmail: String(row['POC Email'] || '').trim(),
-            pocPhone: String(row['POC Phone'] || '').trim(),
-            clientName: String(row['Client Name'] || '').trim(),
-            clientPhone: String(row['Client Phone'] || '').trim(),
-            clientEmail: String(row['Client Email'] || '').trim(),
-            clientType,
-            clientTypeDetail: String(
-              row['Client Detail / Reference'] || 
-              row['Client Type Detail'] || 
-              row['Company Name'] || 
-              row['Friend Name'] || 
-              row['Referrer Name'] || 
-              row['Sales Person'] || 
-              ''
-            ).trim(),
-            domainDetail: String(row['Domain Detail'] || '').trim(),
-            expiryDate: String(row['Expiry Date'] || '').trim(),
-            remark: String(row['Remark'] || '').trim(),
-            department: [], // Default empty, can be edited later
-            assignedTo: '' // Default unassigned
-          });
-        });
+      // Validate Client Type (Case insensitive)
+      let clientType = ClientType.B2B;
+      const matchedClientType = Object.values(ClientType).find(c => c.toLowerCase() === clientTypeRaw.toLowerCase());
+      if (matchedClientType) {
+        clientType = matchedClientType as ClientType;
+      } else if (clientTypeRaw) {
+        validationErrors.push(`Row ${rowNum}: Invalid Client Type '${clientTypeRaw}'. Must be one of: ${Object.values(ClientType).join(', ')}.`);
+      }
 
-        if (validationErrors.length > 0) {
-          setErrors(validationErrors.slice(0, 5)); // Show max 5 errors
-          if (validationErrors.length > 5) {
-             setErrors(prev => [...prev, `...and ${validationErrors.length - 5} more errors.`]);
-          }
-          setParsedLeads([]);
-        } else {
-          setErrors([]);
-          setParsedLeads(leadsToImport);
-        }
+      // Validate Status (Case insensitive)
+      let status = LeadStatus.PENDING;
+      const matchedStatus = Object.values(LeadStatus).find(s => s.toLowerCase() === statusRaw.toLowerCase());
+      if (matchedStatus) {
+        status = matchedStatus as LeadStatus;
+      } else if (statusRaw) {
+        validationErrors.push(`Row ${rowNum}: Invalid Status '${statusRaw}'.`);
+      }
+
+      leadsToImport.push({
+        projectName,
+        category,
+        firstStartDate,
+        workCommencementDate: String(row['Work Commencement Date'] || row['Commencement Date'] || '').trim(),
+        status,
+        pocName,
+        pocEmail: String(row['POC Email'] || '').trim(),
+        pocPhone: String(row['POC Phone'] || '').trim(),
+        clientName: String(row['Client Name'] || '').trim(),
+        clientPhone: String(row['Client Phone'] || '').trim(),
+        clientEmail: String(row['Client Email'] || '').trim(),
+        clientType,
+        clientTypeDetail: String(
+          row['Client Detail / Reference'] ||
+          row['Client Type Detail'] ||
+          row['Company Name'] ||
+          row['Friend Name'] ||
+          row['Referrer Name'] ||
+          row['Sales Person'] ||
+          ''
+        ).trim(),
+        domainDetail: String(row['Domain Detail'] || '').trim(),
+        expiryDate: String(row['Expiry Date'] || '').trim(),
+        remark: String(row['Remark'] || '').trim(),
+        department: [], // Default empty, can be edited later
+        assignedTo: '' // Default unassigned
+      });
+    });
+
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors.slice(0, 5)); // Show max 5 errors
+      if (validationErrors.length > 5) {
+        setErrors(prev => [...prev, `...and ${validationErrors.length - 5} more errors.`]);
+      }
+      setParsedLeads([]);
+    } else {
+      setErrors([]);
+      setParsedLeads(leadsToImport);
+    }
   };
 
   const handleImport = async () => {
     if (parsedLeads.length === 0) return;
-    
+
     setIsUploading(true);
     try {
       await bulkAddLeads(parsedLeads);
@@ -249,15 +249,15 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
   };
 
   return createPortal(
-    <div 
+    <div
       onClick={onClose}
       className="fixed inset-0 bg-transparent flex justify-center items-center z-[9999] p-4 animate-in fade-in duration-200"
     >
-      <div 
+      <div
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-0 w-full max-w-lg overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
       >
-        
+
         {/* Header */}
         <div className="flex justify-between items-center px-8 py-6 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-3">
@@ -276,14 +276,14 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
 
         {/* Content */}
         <div className="p-8 space-y-6">
-          
+
           {/* Step 1: Download Template */}
           <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex items-center justify-between">
             <div>
               <h4 className="text-sm font-bold text-indigo-900">1. Get the Template</h4>
               <p className="text-xs text-indigo-700/70 mt-1">Download our CSV format to ensure correct columns.</p>
             </div>
-            <button 
+            <button
               onClick={handleDownloadTemplate}
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md shadow-indigo-200 transition-all flex items-center gap-2"
             >
@@ -297,7 +297,7 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
             <select
               value={selectedCategory}
               onChange={(e) => handleCategorySelect(e.target.value as LeadCategory)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:border-indigo-500 transition-all outline-none font-medium text-slate-700"
+              className="w-full px-4 py-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-medium transition-all outline-none hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-500/15 shadow-sm"
             >
               {Object.values(LeadCategory).map((cat) => (
                 <option key={cat} value={cat}>Import as {cat} Leads</option>
@@ -315,11 +315,11 @@ export const ImportLeadsModal: React.FC<ImportLeadsModalProps> = ({ isOpen, onCl
                 <p className="text-sm font-bold text-slate-700">{file ? file.name : 'Click to select CSV or Excel file'}</p>
                 {!file && <p className="text-xs text-slate-500 mt-1">or drag and drop here</p>}
               </div>
-              <input 
-                type="file" 
-                accept=".csv,.xlsx,.xls" 
-                onChange={handleFileChange} 
-                className="hidden" 
+              <input
+                type="file"
+                accept=".csv,.xlsx,.xls"
+                onChange={handleFileChange}
+                className="hidden"
               />
             </label>
           </div>

@@ -34,8 +34,8 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
     const handleSessionChange = (index: number, field: 'checkIn' | 'checkOut', value: string) => {
         if (!editingRecord) return;
         const updatedSessions = [...editingRecord.sessions];
-        updatedSessions[index] = { 
-            ...updatedSessions[index], 
+        updatedSessions[index] = {
+            ...updatedSessions[index],
             [field]: value,
             autoCheckedOut: false,
             isManuallyEdited: true
@@ -78,11 +78,11 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
     };
 
     return (
-        <div 
+        <div
             onClick={() => setIsEditModalOpen(false)}
             className="fixed inset-0 bg-transparent flex justify-center items-center z-50 p-4 animate-in fade-in duration-200"
         >
-            <div 
+            <div
                 onClick={(e) => e.stopPropagation()}
                 className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-2xl m-4 max-h-[90vh] overflow-y-auto"
             >
@@ -139,7 +139,7 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                                         step="1"
                                         value={session.checkIn}
                                         onChange={(e) => handleSessionChange(index, 'checkIn', e.target.value)}
-                                        className="block w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                                        className="block w-full max-w-full bg-white border border-slate-300 rounded-lg text-sm px-3 py-2 outline-none hover:border-slate-400 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all font-mono shadow-sm"
                                     />
                                 </div>
                                 <div className="flex-1 w-full">
@@ -149,7 +149,7 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                                         step="1"
                                         value={session.checkOut || ''}
                                         onChange={(e) => handleSessionChange(index, 'checkOut', e.target.value)}
-                                        className="block w-full bg-white border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                                        className="block w-full max-w-full bg-white border border-slate-300 rounded-lg text-sm px-3 py-2 outline-none hover:border-slate-400 focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all font-mono shadow-sm"
                                     />
                                 </div>
                                 <button
@@ -176,20 +176,68 @@ const EditAttendanceModal: React.FC<EditAttendanceModalProps> = ({
                             </span>
                         </div>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-3 sm:gap-4">
                             <button
+                                type="button"
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="flex-1 py-3 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                                className="
+            flex-1
+            min-w-0
+            py-3
+            px-2
+            sm:px-4
+            border
+            border-slate-200
+            rounded-xl
+            text-slate-600
+            text-sm
+            sm:text-base
+            font-medium
+            hover:bg-slate-50
+            transition-colors
+            whitespace-nowrap
+        "
                                 disabled={isSaving}
                             >
                                 Cancel
                             </button>
+
                             <button
+                                type="button"
                                 onClick={handleSaveAttendance}
-                                className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                                className="
+            flex-1
+            min-w-0
+            py-3
+            px-2
+            sm:px-4
+            bg-indigo-600
+            text-white
+            rounded-xl
+            text-sm
+            sm:text-base
+            font-medium
+            hover:bg-indigo-700
+            transition-all
+            shadow-lg
+            shadow-indigo-200
+            flex
+            items-center
+            justify-center
+            gap-1.5
+            sm:gap-2
+            whitespace-nowrap
+        "
                                 disabled={isSaving}
                             >
-                                {isSaving ? 'Saving...' : <><Save size={18} /> Save Changes</>}
+                                {isSaving ? (
+                                    'Saving...'
+                                ) : (
+                                    <>
+                                        <Save size={16} className="sm:w-[18px] sm:h-[18px] flex-shrink-0" />
+                                        <span>Save Changes</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>

@@ -46,8 +46,22 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
 }) => {
     const isSunday = new Date(filterDate + 'T00:00:00').getDay() === 0;
     const holiday = holidays.find(h => h.date === filterDate);
-    const hasNoRecords = filteredAttendance.length === 0 || (isSunday && filteredAttendance.filter(a => a.isPresent).length === 0) || !!holiday;
 
+    // Search by employee name from the first letter onward
+    // Supports every typed letter: A -> Ad -> Adi -> Aditya, etc.
+    const searchedAttendance = searchTerm.trim()
+        ? filteredAttendance.filter(record => {
+            const name = record.userName?.toLowerCase().trim() || "";
+            const search = searchTerm.toLowerCase().trim();
+
+            return name.startsWith(search);
+        })
+        : filteredAttendance;
+
+    const hasNoRecords =
+        searchedAttendance.length === 0 ||
+        (isSunday && searchedAttendance.filter(a => a.isPresent).length === 0) ||
+        !!holiday;
     return (
         <Card className="!p-0 overflow-hidden">
             <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-3 sm:gap-4 justify-between">
@@ -90,7 +104,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                         {loading ? (
                             <tr><td colSpan={6} className="text-center p-8 text-slate-500">Loading data...</td></tr>
                         ) : !hasNoRecords ? (
-                            filteredAttendance
+                            searchedAttendance
                                 .filter(record => {
                                     if ((record.isSunday || record.holiday) && !record.isPresent) return false;
                                     return true;
@@ -101,7 +115,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                                     const lastCompletedSession = isPresent ? [...record.sessions].reverse().find(s => s.checkOut) : null;
                                     const lastCheckOut = lastCompletedSession?.checkOut || '--:--';
                                     const hasActiveSession = isPresent && record.sessions.some((s: any) => !s.checkOut);
-                                    const isAutoCheckedOut = isPresent && !hasActiveSession && record.sessions.some((s: any) => 
+                                    const isAutoCheckedOut = isPresent && !hasActiveSession && record.sessions.some((s: any) =>
                                         !s.isManuallyEdited && (s.autoCheckedOut === true || (s.autoCheckedOut !== false && (s.checkOut === '23:50:00' || s.checkOut === '22:20:00'))) && (s.checkOut === '23:50:00' || s.checkOut === '22:20:00')
                                     );
                                     const isExpanded = expandedRecordId === record.id;

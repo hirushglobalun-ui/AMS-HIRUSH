@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowNotificationPreview(false)}
                   ></div>
-                  <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 max-h-[500px] overflow-hidden flex flex-col">
+                  <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-[calc(100vw-1.5rem)] sm:w-96 sm:max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 max-h-[500px] overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-slate-800">Notifications</h3>
