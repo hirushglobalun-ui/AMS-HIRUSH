@@ -69,7 +69,7 @@ export const LeaveApplyForm: React.FC<LeaveApplyFormProps> = ({
             name="leaveType"
             value={leaveType}
             onChange={(e) => setLeaveType(e.target.value as LeaveType)}
-            className="block w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 dark:text-slate-100"
+            className="block w-full max-w-full truncate px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all text-slate-800 dark:text-slate-100 shadow-sm"
             required
           >
             {Object.values(LeaveType).map((type) => (
@@ -89,7 +89,7 @@ export const LeaveApplyForm: React.FC<LeaveApplyFormProps> = ({
             name="duration"
             value={duration}
             onChange={(e) => setDuration(e.target.value as 'Full Day' | 'Half Day')}
-            className="block w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 dark:text-slate-100"
+            className="block w-full max-w-full truncate px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all text-slate-800 dark:text-slate-100 shadow-sm"
             required
           >
             <option value="Full Day">Full Day</option>
@@ -107,7 +107,7 @@ export const LeaveApplyForm: React.FC<LeaveApplyFormProps> = ({
               name="halfDayType"
               value={halfDayType}
               onChange={(e) => setHalfDayType(e.target.value as 'Morning' | 'Afternoon')}
-              className="block w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 dark:text-slate-100"
+              className="block w-full max-w-full truncate px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/15 focus:border-indigo-600 transition-all text-slate-800 dark:text-slate-100 shadow-sm"
               required
             >
               <option value="Morning">First Half (Morning)</option>

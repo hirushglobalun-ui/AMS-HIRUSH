@@ -94,7 +94,7 @@ const UserDeleteModal: React.FC<UserDeleteModalProps> = ({ isOpen, onClose, user
                             type="text"
                             value={confirmName}
                             onChange={(e) => setConfirmName(e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-slate-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none"
+                            className="w-full max-w-full px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder-slate-400 font-medium transition-all outline-none hover:border-slate-400 focus:border-red-600 focus:ring-4 focus:ring-red-500/15 shadow-sm"
                             placeholder="Type user's name"
                         />
                     </div>

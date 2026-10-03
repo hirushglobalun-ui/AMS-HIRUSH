@@ -170,7 +170,7 @@ export const useLeaveData = (user: User | null) => {
 
         // 1. Fetch registered Admin and HR users from Firestore (their actual account emails and user IDs)
         let recipientEmails: string[] = [];
-        let adminAndHrUserIds: string[] = [];
+        const adminAndHrUserIds: string[] = [];
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         try {
           const adminAndHrQuery = query(
