@@ -7,6 +7,7 @@
     "dev": "next dev -p 3005",
     "build": "next build",
     "start": "next start -p 3005",
+    "seed": "tsx scripts/seed-data.ts",
     "lint": "eslint . --report-unused-disable-directives",
     "test": "tsx --env-file=.env --test tests/**/*.test.ts"
   },
