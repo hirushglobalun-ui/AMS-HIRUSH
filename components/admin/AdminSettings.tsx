@@ -16,7 +16,7 @@ import Button from '../common/Button';
 import { toast } from 'react-hot-toast';
 import { db } from '../../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { MapPin, Navigation, Fingerprint, ShieldCheck } from 'lucide-react';
+import { MapPin, Navigation, Fingerprint, ShieldCheck, Sparkles, Key } from 'lucide-react';
 import { BiometricSettings } from '../../types';
 
 interface OfficeLocationSettings {
@@ -40,6 +40,7 @@ const AdminSettings: React.FC = () => {
         verificationMode: 'location_and_biometric',
         autoApproveFirstDevice: false
     });
+    const [geminiApiKey, setGeminiApiKey] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const mapRef = useRef<any>(null);
@@ -58,6 +59,9 @@ const AdminSettings: React.FC = () => {
                     const data = docSnap.data();
                     if (data.officeLocation) {
                         setSettings(data.officeLocation);
+                    }
+                    if (data.geminiApiKey) {
+                        setGeminiApiKey(data.geminiApiKey);
                     }
                     if (data.biometricSettings) {
                         const isBio = data.biometricSettings.enabled ?? true;
@@ -207,7 +211,8 @@ const AdminSettings: React.FC = () => {
             const docRef = doc(db, 'settings', 'general');
             await setDoc(docRef, { 
                 officeLocation: { ...settings, enabled: true },
-                biometricSettings
+                biometricSettings,
+                geminiApiKey: geminiApiKey.trim()
             }, { merge: true });
             toast.success("Settings saved successfully!");
         } catch (error) {
@@ -281,7 +286,8 @@ const AdminSettings: React.FC = () => {
     if (loading) return <div className="p-4 text-center">Loading settings...</div>;
 
     return (
-        <Card>
+        <div className="space-y-6">
+            <Card>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
@@ -413,6 +419,49 @@ const AdminSettings: React.FC = () => {
                 </div>
             </div>
         </Card>
+
+        {/* AI Copilot Configuration Card */}
+        <Card className="p-6">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2.5 text-indigo-600 dark:text-indigo-400 font-bold">
+                    <Sparkles size={22} className="text-amber-400" />
+                    <h3 className="text-base text-slate-800 dark:text-slate-100">Hirush AI Copilot Intelligence Settings</h3>
+                </div>
+                <Button 
+                    onClick={handleSave} 
+                    disabled={saving}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2"
+                >
+                    {saving ? 'Saving...' : 'Save AI Settings'}
+                </Button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                Configure your Google Gemini API Key to enable generative multilingual reasoning in Malayalam and English for Attendance, CRM Leads, Leave Auditing, and Domain Health.
+            </p>
+
+            <div className="space-y-3 max-w-xl">
+                <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Google Gemini API Key (Gemini 2.5 / 2.0 Flash)
+                    </label>
+                    <div className="relative">
+                        <Key size={16} className="absolute left-3 top-3 text-slate-400" />
+                        <input
+                            type="password"
+                            value={geminiApiKey}
+                            onChange={(e) => setGeminiApiKey(e.target.value)}
+                            placeholder="AIzaSy..."
+                            className="w-full pl-9 pr-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                        Get your API key free from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-600 underline">Google AI Studio</a>. If left blank, the assistant still provides deterministic real-time Firestore database queries.
+                    </p>
+                </div>
+            </div>
+        </Card>
+        </div>
     );
 };
 

@@ -86,10 +86,10 @@ export const PWAInstallPrompt: React.FC = () => {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white shadow-lg rounded-lg border border-gray-200 p-4 z-50 animate-slide-up">
+    <div className="fixed bottom-4 left-4 right-4 sm:right-auto sm:left-6 sm:w-96 bg-white shadow-xl rounded-2xl border border-slate-200 p-4 z-40 animate-slide-up">
       <button
         onClick={handleDismiss}
-        className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+        className="absolute top-2.5 right-2.5 text-slate-400 hover:text-slate-600 p-1 rounded-lg"
         aria-label="Close"
       >
         <X size={20} />

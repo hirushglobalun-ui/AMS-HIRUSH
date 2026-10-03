@@ -18,6 +18,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { getNavItemsForUser } from './navConfig';
+import { AICopilotDrawer } from '../ai/AICopilotDrawer';
 
 export interface NavItemType {
   id: string;
@@ -232,6 +233,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </div>
         </main>
       </div>
+
+      {/* Floating AI Intelligence Copilot */}
+      <AICopilotDrawer />
     </div>
   );
 };
