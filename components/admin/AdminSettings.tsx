@@ -443,7 +443,7 @@ const AdminSettings: React.FC = () => {
             <div className="space-y-3 max-w-xl">
                 <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Google Gemini API Key (Gemini 2.5 / 2.0 Flash)
+                        Google Gemini API Key (Gemini 3.8 / 2.5 Flash)
                     </label>
                     <div className="relative">
                         <Key size={16} className="absolute left-3 top-3 text-slate-400" />

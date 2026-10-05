@@ -207,7 +207,7 @@ export const AIMarkdownRenderer: React.FC<AIMarkdownRendererProps> = ({ content 
 
     // Check if bullet point is a KPI metric like "• Pending Approvals: 4"
     if (line.startsWith('• ') || line.startsWith('- ') || line.startsWith('* ')) {
-      const cleanLine = line.replace(/^[•\-\*]\s*/, '');
+      const cleanLine = line.replace(/^[•\-*]\s*/, '');
       const metricMatch = cleanLine.match(/^\*\*(.*?)\*\*:\s*(.*)$/);
 
       if (metricMatch) {

@@ -1,10 +1,20 @@
 /**
  * File: services/aiIntentDispatcher.ts
- * Purpose: Smart intent dispatcher that connects user prompts to live Firestore queries,
- * and passes the verified database context to Gemini / API engine.
+ * Purpose: Enterprise AI Intent Dispatcher & Orchestrator for Hirush Global AMS.
+ * Implements: Query Normalization -> Intent Routing -> Entity/Date Parsing -> RBAC -> Fast Cache ->
+ * Firestore Query -> Deterministic Answering -> AI Fallback & Response Validation.
+ * Author: Hirush Global AMS
  */
 
-import { extractDateFromQuery } from '../utils/aiDateParser';
+import { User } from '../types';
+import { normalizeQuery } from './aiQueryNormalizer';
+import { AIIntent, isDeterministicIntent } from './aiIntentRegistry';
+import { extractEntities, ExtractedEntities } from './aiEntityExtractor';
+import { checkPermission, sanitizeDataForRole } from './aiSecurityRbac';
+import { getFromCache, setInCache, CacheTTL } from './aiCacheService';
+import { generateDeterministicAnswer, ActionButton } from './aiDeterministicEngine';
+import { validateAiResponse } from './aiResponseValidator';
+import { recordAiAudit } from './aiAuditService';
 import {
   queryAttendance,
   queryLeads,
@@ -16,7 +26,6 @@ import {
   queryUserDetail,
   getAllUsersCached,
 } from './aiDataQueryService';
-import { User } from '../types';
 
 export interface DispatchResult {
   answer: string;
@@ -24,191 +33,159 @@ export interface DispatchResult {
   hasRealAi: boolean;
   rawContext?: any;
   dateQueried?: string;
+  source?: 'verified_db' | 'ai_analysis' | 'general';
+  suggestedActions?: ActionButton[];
+  metrics?: Record<string, any>;
+  latencyMs?: number;
+  intent?: AIIntent;
 }
 
+// Conversation state memory for follow-up questions (e.g. "What about Friday?", "Who were they?")
+interface ConversationContext {
+  lastIntent?: AIIntent;
+  lastCategory?: string;
+  lastDate?: string;
+  lastDepartment?: string;
+  lastData?: any;
+}
+
+let activeConversationContext: ConversationContext = {};
+
+export function resetConversationContext() {
+  activeConversationContext = {};
+}
+
+/**
+ * Main AI Copilot Dispatcher Pipeline.
+ */
 export async function dispatchAiQuery(
   prompt: string,
   user: User,
   chatHistory: { role: 'user' | 'model'; parts: { text: string }[] }[] = [],
   customApiKey?: string
 ): Promise<DispatchResult> {
-  const lower = prompt.toLowerCase().trim();
+  const startTime = Date.now();
 
-  // Auto-resolve stored API key from localStorage if not explicitly passed
-  const resolvedApiKey =
-    customApiKey ||
-    (typeof window !== 'undefined' ? localStorage.getItem('hirush_gemini_api_key') || undefined : undefined);
+  // 1. Query Normalization (handles typos, Manglish, Malayalam, casing, punctuation)
+  const normalized = normalizeQuery(prompt);
+  const normText = normalized.normalized;
 
-  let queryType = 'general';
-  let databaseContext: any = null;
-  let dateQueried: string | undefined = undefined;
-
-  // 0. Check if query matches a specific staff member/name (e.g. Sayed, Vikram, Priya)
-  let matchedUser: User | undefined = undefined;
+  // 2. Fetch Cached Users for Entity Extraction
+  let allUsers: User[] = [];
   try {
-    const allUsers = await getAllUsersCached();
-    const cleanLower = lower.replace(/[^a-z0-9]/g, '');
-    matchedUser = allUsers.find(u => {
-      const fullName = (u.name || '').toLowerCase();
-      const cleanName = fullName.replace(/[^a-z0-9]/g, '');
-      const parts = fullName.split(/\s+/).filter(Boolean);
-      const empId = (u.employeeId || '').toLowerCase();
-      const emailPrefix = (u.email || '').split('@')[0].toLowerCase();
-      const cleanEmailPrefix = emailPrefix.replace(/[^a-z0-9]/g, '');
+    allUsers = await getAllUsersCached();
+  } catch (err) {
+    console.warn('Could not retrieve cached users:', err);
+  }
 
-      return (
-        // Exact or substring match in prompt
-        (fullName.length >= 3 && lower.includes(fullName)) ||
-        // Collapsed alphanumeric match (e.g. "sayedp" matching "Sayed P" or "Sayed BP")
-        (cleanName.length >= 3 && (cleanLower.includes(cleanName) || cleanName.includes(cleanLower))) ||
-        // First name or part match (min 3 chars)
-        parts.some(p => p.length >= 3 && (lower.includes(p) || cleanLower.includes(p))) ||
-        // Email username prefix match
-        (cleanEmailPrefix.length >= 3 && cleanLower.includes(cleanEmailPrefix)) ||
-        // Employee ID match
-        (empId && (lower.includes(empId) || cleanLower.includes(empId)))
-      );
+  // 3. Entity Extraction (dates, names, departments, roles, filters)
+  const entities = extractEntities(normText, allUsers);
+
+  // 4. Intent Detection with Follow-Up Intelligence
+  let intent = detectIntent(normText, entities);
+
+  // Handle follow-ups: e.g. "What about Friday?" or "What about yesterday?"
+  if (
+    intent === AIIntent.UNKNOWN &&
+    activeConversationContext.lastIntent &&
+    (normText.includes('what about') || normText.includes('and friday') || normText.includes('how about'))
+  ) {
+    intent = activeConversationContext.lastIntent;
+  }
+
+  // Handle "Who were they?" follow-up
+  if (
+    (normText.includes('who were they') || normText.includes('who are they') || normText.includes('names')) &&
+    activeConversationContext.lastData
+  ) {
+    intent = activeConversationContext.lastIntent || AIIntent.ATTENDANCE_ABSENT;
+  }
+
+  // 5. RBAC Permission Check (Intercept unauthorized queries early)
+  const permission = checkPermission(user, intent, prompt);
+  if (!permission.allowed) {
+    const latency = Date.now() - startTime;
+    recordAiAudit({
+      userId: user.id,
+      userName: user.name,
+      role: user.role,
+      intent,
+      query: prompt,
+      isDeterministic: true,
+      cacheHit: false,
+      latencyMs: latency,
+      success: false,
+      error: 'Permission Denied',
     });
-  } catch (uErr) {
-    console.warn('Could not inspect cached users:', uErr);
+
+    return {
+      answer: permission.reason || '🔒 You do not have permission to view this data.',
+      queryType: 'permission_denied',
+      hasRealAi: false,
+      source: 'verified_db',
+      latencyMs: latency,
+      suggestedActions: [
+        { label: 'Check Today\'s Attendance', query: 'Who is present today?' },
+        { label: 'Upcoming Holidays', query: 'When is the next holiday?' },
+      ],
+    };
   }
 
-  // 1. Attendance Intent (Check-in, Present, Absent, Friday, Yesterday, etc.)
-  const isAttendanceQuery =
-    lower.includes('present') ||
-    lower.includes('attendance') ||
-    lower.includes('absent') ||
-    lower.includes('checkin') ||
-    lower.includes('check in') ||
-    lower.includes('check-in') ||
-    lower.includes('checked in') ||
-    lower.includes('wfh') ||
-    lower.includes('work from home') ||
-    lower.includes('punch') ||
-    lower.includes('worked') ||
-    lower.includes('working') ||
-    lower.includes('who came') ||
-    lower.includes('who is in') ||
-    lower.includes('in office') ||
-    lower.includes('vannu') ||
-    lower.includes('vannatha') ||
-    lower.includes('aara vannathu') ||
-    lower.includes('aaraayirunnu') ||
-    lower.includes('friday') ||
-    lower.includes('velli') ||
-    lower.includes('vellikizhaacha') ||
-    lower.includes('yesterday') ||
-    lower.includes('innale') ||
-    lower.includes('innu');
+  // 6. Data Scope & Cache Key Resolution
+  const dateKey = entities.dateInfo.date || new Date().toISOString().split('T')[0];
+  const cacheKey = resolveCacheKey(intent, entities, dateKey);
 
-  // 2. Leads / CRM Intent
-  const isLeadsQuery =
-    lower.includes('lead') ||
-    lower.includes('crm') ||
-    lower.includes('project') ||
-    lower.includes('client') ||
-    lower.includes('pipeline') ||
-    lower.includes('ongoing') ||
-    lower.includes('proposal') ||
-    lower.includes('disposed') ||
-    lower.includes('sales') ||
-    lower.includes('deal');
+  // 7. Check Fast Cache Layer
+  let databaseContext: any = null;
+  let cacheHit = false;
 
-  // 3. Leave Requests Intent
-  const isLeavesQuery =
-    lower.includes('leave') ||
-    lower.includes('vacation') ||
-    lower.includes('sick') ||
-    lower.includes('casual') ||
-    lower.includes('avathi') ||
-    lower.includes('pending approval') ||
-    lower.includes('permission');
-
-  // 4. Domains & Hosting Intent
-  const isDomainsQuery =
-    lower.includes('domain') ||
-    lower.includes('ssl') ||
-    lower.includes('dns') ||
-    lower.includes('expiry') ||
-    lower.includes('expire') ||
-    lower.includes('hosting') ||
-    lower.includes('website');
-
-  // 5. Team / Employees Directory Intent
-  const isTeamQuery =
-    lower.includes('team') ||
-    lower.includes('employee') ||
-    lower.includes('staff') ||
-    lower.includes('developer') ||
-    lower.includes('department') ||
-    lower.includes('how many people') ||
-    lower.includes('intern') ||
-    lower.includes('directory') ||
-    lower.includes('members');
-
-  // 6. Holidays Calendar Intent
-  const isHolidaysQuery =
-    lower.includes('holiday') ||
-    lower.includes('calendar') ||
-    lower.includes('off day');
-
-  try {
-    if (matchedUser && !isAttendanceQuery && !isLeadsQuery && !isDomainsQuery) {
-      queryType = 'user_profile';
-      databaseContext = await queryUserDetail(matchedUser);
-    } else if (isAttendanceQuery) {
-      queryType = 'attendance';
-      const parsed = extractDateFromQuery(prompt);
-      const targetDate = parsed.date || new Date().toISOString().split('T')[0];
-      dateQueried = targetDate;
-      const attData = await queryAttendance(targetDate);
-      databaseContext = matchedUser
-        ? { ...attData, targetEmployee: await queryUserDetail(matchedUser) }
-        : attData;
-    } else if (isLeadsQuery) {
-      queryType = 'leads';
-      let statusFilter: string | undefined = undefined;
-      if (lower.includes('ongoing')) statusFilter = 'Ongoing';
-      else if (lower.includes('pending')) statusFilter = 'Pending';
-      else if (lower.includes('proposal')) statusFilter = 'Proposal Sent';
-      else if (lower.includes('completed')) statusFilter = 'Completed';
-      else if (lower.includes('on hold')) statusFilter = 'On Hold';
-      databaseContext = await queryLeads(statusFilter);
-    } else if (isLeavesQuery) {
-      queryType = 'leaves';
-      let statusFilter: string | undefined = undefined;
-      if (lower.includes('pending')) statusFilter = 'Pending';
-      else if (lower.includes('approved')) statusFilter = 'Approved';
-      else if (lower.includes('rejected')) statusFilter = 'Rejected';
-      databaseContext = await queryLeaveRequests(statusFilter);
-    } else if (isDomainsQuery) {
-      queryType = 'domains';
-      databaseContext = await queryDomains();
-    } else if (isTeamQuery) {
-      queryType = 'team';
-      let deptFilter: string | undefined = undefined;
-      const depts = ['Development', 'Management', 'HR', 'Sales', 'SEO', 'Product', 'Media'];
-      for (const d of depts) {
-        if (lower.includes(d.toLowerCase())) {
-          deptFilter = d;
-          break;
-        }
-      }
-      databaseContext = await queryTeam(deptFilter);
-    } else if (isHolidaysQuery) {
-      queryType = 'holidays';
-      databaseContext = await queryHolidays();
-    } else {
-      // General executive snapshot
-      queryType = 'general_snapshot';
-      databaseContext = await queryExecutiveSnapshot();
+  if (cacheKey) {
+    const cachedData = getFromCache<any>(cacheKey);
+    if (cachedData) {
+      databaseContext = cachedData;
+      cacheHit = true;
     }
-  } catch (dbErr) {
-    console.error('Error fetching live database records for AI prompt:', dbErr);
   }
 
-  // Call the server API endpoint
+  // 8. Fetch from Live Firestore if Cache Miss
+  if (!databaseContext) {
+    databaseContext = await fetchFirestoreData(intent, entities, dateKey, allUsers);
+    if (cacheKey && databaseContext) {
+      const ttl = resolveCacheTTL(intent);
+      setInCache(cacheKey, databaseContext, ttl);
+    }
+  }
+
+  // 9. Sanitize Data for Role (strip PII / private data)
+  const sanitizedContext = sanitizeDataForRole(databaseContext, user.role);
+
+  // Update conversation memory
+  activeConversationContext = {
+    lastIntent: intent,
+    lastCategory: intent.toLowerCase(),
+    lastDate: dateKey,
+    lastDepartment: entities.department,
+    lastData: sanitizedContext,
+  };
+
+  // 10. Check if Question Can Be Answered Deterministically
+  const isAnalyticalQuery =
+    normText.includes('why') ||
+    normText.includes('compare') ||
+    normText.includes('pattern') ||
+    normText.includes('trend') ||
+    normText.includes('recommend') ||
+    normText.includes('briefing') ||
+    normText.includes('strategic') ||
+    normText.includes('summarize situation');
+
+  // 10. Generative Gemini AI with Real Live Database Context
+  // Sends user question and live Firestore records to Gemini for dynamic, multilingual reasoning
   try {
+    const apiKey =
+      customApiKey ||
+      (typeof window !== 'undefined' ? localStorage.getItem('hirush_gemini_api_key') || undefined : undefined);
+
     const res = await fetch('/api/ai-chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -220,33 +197,285 @@ export async function dispatchAiQuery(
           role: user.role,
           department: user.department,
         },
-        queryType,
-        databaseContext,
-        customApiKey: resolvedApiKey,
+        queryType: intent,
+        databaseContext: sanitizedContext,
+        customApiKey: apiKey,
       }),
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Server error communicating with AI agent');
-    }
+    if (res.ok) {
+      const json = await res.json();
+      const rawAiAnswer = json.text || '';
 
-    return {
-      answer: data.text,
-      queryType,
-      hasRealAi: Boolean(data.hasRealAi),
-      rawContext: databaseContext,
-      dateQueried,
-    };
-  } catch (err: any) {
-    console.error('AI chat endpoint call failed:', err);
-    // Ultimate local fallback
-    return {
-      answer: `⚠️ Could not reach AI service: ${err.message}. Please check your connection.`,
-      queryType,
-      hasRealAi: false,
-      rawContext: databaseContext,
-      dateQueried,
-    };
+      if (rawAiAnswer) {
+        // Validate factual numbers against verified database context
+        const validated = validateAiResponse(rawAiAnswer, sanitizedContext);
+        const latency = Date.now() - startTime;
+
+        recordAiAudit({
+          userId: user.id,
+          userName: user.name,
+          role: user.role,
+          intent,
+          query: prompt,
+          isDeterministic: false,
+          modelUsed: json.modelUsed || 'gemini-2.5-flash',
+          cacheHit,
+          latencyMs: latency,
+          success: true,
+        });
+
+        return {
+          answer: validated.text,
+          queryType: intent,
+          hasRealAi: json.hasRealAi !== false,
+          source: json.hasRealAi ? 'ai_analysis' : 'verified_db',
+          suggestedActions: [
+            { label: 'Today\'s Attendance', query: 'Who is present today?' },
+            { label: 'Active CRM Leads', query: 'Show ongoing CRM leads' },
+            { label: 'Executive Snapshot', query: 'Give me today\'s executive summary' },
+          ],
+          dateQueried: dateKey,
+          latencyMs: latency,
+          intent,
+        };
+      }
+    }
+  } catch (apiErr: any) {
+    console.warn('Gemini API call failed, falling back to deterministic answer:', apiErr);
   }
+
+  // 11. Fallback directly to deterministic response engine
+  const fallbackRes = generateDeterministicAnswer(intent, entities, sanitizedContext, user);
+  const latency = Date.now() - startTime;
+
+  recordAiAudit({
+    userId: user.id,
+    userName: user.name,
+    role: user.role,
+    intent,
+    query: prompt,
+    isDeterministic: true,
+    cacheHit,
+    latencyMs: latency,
+    success: true,
+  });
+
+  return {
+    answer: fallbackRes.answer,
+    queryType: intent,
+    hasRealAi: false,
+    source: 'verified_db',
+    suggestedActions: fallbackRes.suggestedActions,
+    metrics: fallbackRes.metrics,
+    dateQueried: dateKey,
+    latencyMs: latency,
+    intent,
+  };
+}
+
+/**
+ * Maps normalized prompt and extracted entities to a structured AIIntent.
+ */
+function detectIntent(text: string, entities: ExtractedEntities): AIIntent {
+  // 1. Executive Snapshot
+  if (
+    text.includes('executive summary') ||
+    text.includes('executive snapshot') ||
+    text.includes('overall status') ||
+    text.includes('how is the company doing') ||
+    text.includes('company doing today') ||
+    text.includes('daily briefing')
+  ) {
+    return AIIntent.EXECUTIVE_SUMMARY;
+  }
+
+  // 2. Specific Employee Match
+  if (entities.matchedUser) {
+    if (text.includes('present') || text.includes('came') || text.includes('checkin') || text.includes('worked')) {
+      return AIIntent.ATTENDANCE_EMPLOYEE;
+    }
+    if (text.includes('leave') || text.includes('vacation')) {
+      return AIIntent.LEAVE_EMPLOYEE;
+    }
+    return AIIntent.EMPLOYEE_SEARCH;
+  }
+
+  // 3. Attendance Intents
+  const isAtt =
+    text.includes('present') ||
+    text.includes('attendance') ||
+    text.includes('absent') ||
+    text.includes('checkin') ||
+    text.includes('check in') ||
+    text.includes('punch') ||
+    text.includes('who came') ||
+    text.includes('who is in') ||
+    text.includes('in office') ||
+    text.includes('worked') ||
+    text.includes('wfh') ||
+    text.includes('work from home') ||
+    text.includes('late');
+
+  if (isAtt) {
+    if (entities.metricType === 'absent' || text.includes('absent')) return AIIntent.ATTENDANCE_ABSENT;
+    if (entities.metricType === 'wfh' || text.includes('wfh') || text.includes('work from home')) return AIIntent.ATTENDANCE_WFH;
+    if (entities.metricType === 'late' || text.includes('late')) return AIIntent.ATTENDANCE_LATE;
+    if (entities.dateInfo.label === 'Today') return AIIntent.ATTENDANCE_TODAY;
+    return AIIntent.ATTENDANCE_DATE;
+  }
+
+  // 4. Leave Intents
+  const isLeave =
+    text.includes('leave') ||
+    text.includes('vacation') ||
+    text.includes('sick') ||
+    text.includes('casual') ||
+    text.includes('avathi');
+
+  if (isLeave) {
+    if (text.includes('pending')) return AIIntent.LEAVE_PENDING;
+    if (text.includes('today')) return AIIntent.LEAVE_TODAY;
+    if (text.includes('upcoming') || text.includes('next')) return AIIntent.LEAVE_UPCOMING;
+    return AIIntent.LEAVE_SUMMARY;
+  }
+
+  // 5. CRM / Leads Intents
+  const isCrm =
+    text.includes('lead') ||
+    text.includes('crm') ||
+    text.includes('project') ||
+    text.includes('client') ||
+    text.includes('pipeline') ||
+    text.includes('sales') ||
+    text.includes('deal');
+
+  if (isCrm) {
+    if (text.includes('active') || text.includes('ongoing')) return AIIntent.CRM_ACTIVE;
+    if (text.includes('pipeline')) return AIIntent.CRM_PIPELINE;
+    if (text.includes('client')) return AIIntent.CRM_CLIENT;
+    return AIIntent.CRM_LEADS;
+  }
+
+  // 6. Domain & SSL Intents
+  const isDomain =
+    text.includes('domain') ||
+    text.includes('ssl') ||
+    text.includes('dns') ||
+    text.includes('expiry') ||
+    text.includes('expire') ||
+    text.includes('hosting');
+
+  if (isDomain) {
+    if (text.includes('ssl')) return AIIntent.SSL_STATUS;
+    if (text.includes('dns')) return AIIntent.DNS_STATUS;
+    if (text.includes('expire') || text.includes('expiry')) return AIIntent.DOMAIN_EXPIRY;
+    return AIIntent.DOMAIN_HEALTH;
+  }
+
+  // 7. Team & Employee Directory Intents
+  const isTeam =
+    text.includes('team') ||
+    text.includes('employee') ||
+    text.includes('staff') ||
+    text.includes('developer') ||
+    text.includes('department') ||
+    text.includes('how many people');
+
+  if (isTeam) {
+    if (entities.department) return AIIntent.EMPLOYEE_DEPARTMENT;
+    if (entities.metricType === 'count') return AIIntent.EMPLOYEE_COUNT;
+    return AIIntent.EMPLOYEE_SEARCH;
+  }
+
+  // 8. Holidays Intents
+  if (text.includes('holiday') || text.includes('calendar') || text.includes('off day')) {
+    if (text.includes('next') || text.includes('upcoming')) return AIIntent.HOLIDAY_NEXT;
+    return AIIntent.HOLIDAY_LIST;
+  }
+
+  return AIIntent.UNKNOWN;
+}
+
+/**
+ * Resolves cache key based on intent and query parameters.
+ */
+function resolveCacheKey(intent: AIIntent, entities: ExtractedEntities, dateKey: string): string | null {
+  if (
+    intent === AIIntent.ATTENDANCE_TODAY ||
+    intent === AIIntent.ATTENDANCE_DATE ||
+    intent === AIIntent.ATTENDANCE_ABSENT ||
+    intent === AIIntent.ATTENDANCE_WFH ||
+    intent === AIIntent.ATTENDANCE_LATE
+  ) {
+    return `attendance:${dateKey}`;
+  }
+  if (intent === AIIntent.LEAVE_PENDING) return 'leaves:pending';
+  if (intent === AIIntent.LEAVE_TODAY || intent === AIIntent.LEAVE_SUMMARY) return 'leaves:all';
+  if (intent === AIIntent.CRM_ACTIVE || intent === AIIntent.CRM_LEADS) return `crm:${entities.statusFilter || 'all'}`;
+  if (intent === AIIntent.DOMAIN_HEALTH || intent === AIIntent.DOMAIN_EXPIRY) return 'domains:all';
+  if (intent === AIIntent.HOLIDAY_NEXT || intent === AIIntent.HOLIDAY_LIST) return 'holidays:all';
+  if (intent === AIIntent.EXECUTIVE_SUMMARY) return `executive:${dateKey}`;
+  if (intent === AIIntent.EMPLOYEE_COUNT || intent === AIIntent.EMPLOYEE_DEPARTMENT) {
+    return `team:${entities.department || 'all'}`;
+  }
+  return null;
+}
+
+/**
+ * Resolves TTL for specific category.
+ */
+function resolveCacheTTL(intent: AIIntent): number {
+  if (intent.startsWith('ATTENDANCE')) return CacheTTL.ATTENDANCE;
+  if (intent.startsWith('LEAVE')) return CacheTTL.LEAVES;
+  if (intent.startsWith('CRM')) return CacheTTL.CRM;
+  if (intent.startsWith('DOMAIN')) return CacheTTL.DOMAINS;
+  if (intent.startsWith('HOLIDAY')) return CacheTTL.HOLIDAYS;
+  if (intent.startsWith('EMPLOYEE')) return CacheTTL.USERS;
+  return CacheTTL.EXECUTIVE;
+}
+
+/**
+ * Performs target Firestore read.
+ */
+async function fetchFirestoreData(
+  intent: AIIntent,
+  entities: ExtractedEntities,
+  dateKey: string,
+  allUsers: User[]
+): Promise<any> {
+  if (entities.matchedUser) {
+    return await queryUserDetail(entities.matchedUser);
+  }
+
+  if (intent.startsWith('ATTENDANCE')) {
+    return await queryAttendance(dateKey);
+  }
+
+  if (intent.startsWith('LEAVE')) {
+    return await queryLeaveRequests(entities.statusFilter);
+  }
+
+  if (intent.startsWith('CRM')) {
+    return await queryLeads(entities.statusFilter);
+  }
+
+  if (intent.startsWith('DOMAIN')) {
+    return await queryDomains();
+  }
+
+  if (intent.startsWith('EMPLOYEE')) {
+    return await queryTeam(entities.department, entities.role);
+  }
+
+  if (intent.startsWith('HOLIDAY')) {
+    return await queryHolidays();
+  }
+
+  if (intent === AIIntent.EXECUTIVE_SUMMARY) {
+    return await queryExecutiveSnapshot();
+  }
+
+  // Default fallback snapshot
+  return await queryExecutiveSnapshot();
 }

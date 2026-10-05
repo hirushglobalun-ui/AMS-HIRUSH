@@ -16,6 +16,36 @@ interface ChatRequestPayload {
   customApiKey?: string;
 }
 
+// In-memory sliding rate limiter per user/IP
+interface RateLimitRecord {
+  count: number;
+  resetAt: number;
+}
+const rateLimitMap = new Map<string, RateLimitRecord>();
+
+function checkRateLimit(identifier: string, role: string = 'Employee'): boolean {
+  const now = Date.now();
+  const windowMs = 10 * 60 * 1000; // 10 minutes
+
+  let maxRequests = 30; // Employee: 30 requests / 10 min
+  if (role === 'Admin') maxRequests = 120;
+  else if (role === 'HR') maxRequests = 100;
+  else if (role === 'Manager') maxRequests = 60;
+
+  const record = rateLimitMap.get(identifier);
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(identifier, { count: 1, resetAt: now + windowMs });
+    return false;
+  }
+
+  if (record.count >= maxRequests) {
+    return true;
+  }
+
+  record.count++;
+  return false;
+}
+
 export async function POST(req: Request) {
   try {
     const body: ChatRequestPayload = await req.json();
@@ -23,6 +53,15 @@ export async function POST(req: Request) {
 
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    }
+
+    // Rate Limiting check
+    const clientKey = userContext?.name || req.headers.get('x-forwarded-for') || 'default_client';
+    if (checkRateLimit(clientKey, userContext?.role)) {
+      return NextResponse.json(
+        { error: 'AI request limit reached for this session. Please wait a few minutes before submitting more AI queries.' },
+        { status: 429 }
+      );
     }
 
     let apiKey =
@@ -77,12 +116,12 @@ CURRENT USER CONTEXT:
     if (apiKey && apiKey !== 'dummy_api_key_for_build') {
       try {
         const ai = new GoogleGenAI({ apiKey });
-        
+
         // Prepare content with context
         const userPromptWithContext = `${contextString}\nUser Question: ${prompt}`;
 
-        // Attempt gemini-2.5-flash first, falling back to gemini-2.0-flash
-        const modelNames = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+        // Prioritize gemini-2.5-flash, then fallback across resilient active models
+        const modelNames = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
         let lastError = null;
 
         for (const model of modelNames) {
@@ -164,7 +203,6 @@ function generateRuleBasedSummary(prompt: string, queryType?: string, data?: any
     out += `• **Department:** ${employeeProfile.department}\n`;
     out += `• **Designation:** ${employeeProfile.position} (${employeeProfile.role})\n`;
     out += `• **Email:** \`${employeeProfile.email}\`\n`;
-    out += `• **Phone:** ${employeeProfile.phone}\n`;
     out += `• **Today's Status:** ${todayStatus}\n\n`;
 
     if (leaveHistory && leaveHistory.length > 0) {
@@ -291,10 +329,12 @@ function generateRuleBasedSummary(prompt: string, queryType?: string, data?: any
 
   // General executive snapshot
   if (queryType === 'general_snapshot' || data.totalEmployees !== undefined) {
+    const attendancePct = data.totalEmployees > 0 ? Math.round(((data.presentToday ?? 0) / data.totalEmployees) * 100) : 0;
     let out = `### 📊 Hirush Global Enterprise Live Snapshot\n\n`;
     out += `Here is the current executive status across the enterprise:\n\n`;
     out += `• **Present Staff Today:** \`${data.presentToday ?? 0}\`\n`;
     out += `• **Total Active Staff:** \`${data.totalEmployees ?? 0}\`\n`;
+    out += `• **Attendance Rate:** \`${attendancePct}%\`\n`;
     out += `• **Active CRM Leads:** \`${data.ongoingLeads ?? 0}\`\n`;
     out += `• **Pending Leave Requests:** \`${data.pendingLeaves ?? 0}\`\n`;
     out += `• **Domains Expiring Soon:** \`${data.expiringDomains ?? 0}\`\n\n`;
