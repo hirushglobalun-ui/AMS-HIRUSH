@@ -63,14 +63,24 @@ export const generateSRS = async (title: string, description: string): Promise<s
     Ensure the language is professional, clear, and unambiguous. The final output should be in Markdown format.
   `;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro',
-      contents: prompt,
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Error generating SRS with Gemini:", error);
-    return "Error: Could not generate the SRS document. Please check the console for more details.";
+  const modelCandidates = ['gemini-2.5-pro', 'gemini-3.8-flash'];
+  let lastError: any = null;
+
+  for (const model of modelCandidates) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+      });
+      if (response.text) {
+        return response.text;
+      }
+    } catch (error: any) {
+      console.warn(`SRS generation with model ${model} failed:`, error?.message || error);
+      lastError = error;
+    }
   }
+
+  console.error("Error generating SRS with Gemini (all candidates exhausted):", lastError);
+  return "Error: Could not generate the SRS document. Please check the console for more details.";
 };

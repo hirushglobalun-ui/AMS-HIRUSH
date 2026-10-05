@@ -9,7 +9,7 @@
  *  - Provides zero-flicker loading state via SplashScreen.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { Role } from '../../types';
@@ -24,18 +24,23 @@ interface AuthGuardProps {
 export const AuthGuard: React.FC<AuthGuardProps> = ({ children, allowedRoles }) => {
   const { user, loading, isFirstTimeSetup } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !loading) {
       if (isFirstTimeSetup) {
         router.replace('/setup');
       } else if (!user) {
         router.replace('/login');
       }
     }
-  }, [user, loading, isFirstTimeSetup, router]);
+  }, [mounted, user, loading, isFirstTimeSetup, router]);
 
-  if (loading || !user || isFirstTimeSetup) {
+  if (!mounted || loading || !user || isFirstTimeSetup) {
     return <SplashScreen />;
   }
 

@@ -398,6 +398,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | `app/login/page.tsx` | 28 | Dedicated authentication page for unauthenticated users. |
 | `app/setup/page.tsx` | 23 | First-time installation and Super Admin creation route. |
 | `app/dashboard/page.tsx` | 33 | Role-based dashboard shell; renders Admin, HR, or User KPI views. |
+| `app/assistant/page.tsx` | 275 | Hirush AI Copilot Command Center: conversational query interface with live Firestore database integration. |
 | `app/attendance/page.tsx` | 30 | Attendance tracking, GPS validation, biometrics, and history logs. |
 | `app/leave/page.tsx` | 34 | Leave quota overview, leave application form, and approval tables. |
 | `app/users/page.tsx` | 32 | Team directory, user creation modal, document viewer, and profile editor. |
@@ -618,6 +619,8 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | `services/cloudinaryService.ts` | 65 | Cloudinary integration: handles photo and document uploads with server API and client-preset fallback. |
 | `services/exportService.ts` | 40 | Spreadsheet generation: converts JSON arrays into downloadable Excel (`.xlsx`) or CSV files via SheetJS. |
 | `services/geminiService.ts` | 76 | AI document synthesis: interfaces with Google GenAI SDK (`@google/genai`) to generate SRS specifications. |
+| `services/aiDataQueryService.ts` | 320 | Real-time Firestore database query engine for AI Copilot (attendance, leads, leaves, domains, users). |
+| `services/aiIntentDispatcher.ts` | 170 | AI intent classifier and dispatcher connecting prompts to live Firestore records and Gemini API. |
 
 #### Core Utilities (`utils/`)
 | File Path | Lines | Purpose / Responsibility |
@@ -625,6 +628,7 @@ Below is the complete, exhaustive catalog of every source file in the repository
 | `utils/biometricService.ts` | 246 | WebAuthn hardware engine: handles `PublicKeyCredential.create()` registration and `get()` authentication challenges. |
 | `utils/wfhHelper.ts` | 74 | Geofence math: Haversine distance calculations and location verification against office boundaries. |
 | `utils/userUtils.ts` | 66 | Formatting helpers for user display names, role styling, and avatar generation. |
+| `utils/aiDateParser.ts` | 110 | Multilingual natural language date parser (English & Malayalam/Manglish) resolving to Firestore ISO dates. |
 
 ---
 

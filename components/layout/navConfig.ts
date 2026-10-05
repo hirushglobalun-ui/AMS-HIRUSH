@@ -18,6 +18,7 @@ import {
   Globe,
   Fingerprint,
   MapPin,
+  Sparkles,
 } from 'lucide-react';
 import { NavItemType } from './DashboardLayout';
 
@@ -25,6 +26,7 @@ export const getNavItemsForUser = (user: User): NavItemType[] => {
   if (user.role === Role.ADMIN) {
     return [
       { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'assistant', href: '/assistant', label: 'AI Copilot', icon: Sparkles },
       { id: 'attendance', href: '/attendance', label: 'Attendance', icon: CalendarCheck },
       { id: 'leave', href: '/leave', label: 'Leave Requests', icon: Briefcase },
       { id: 'users', href: '/users', label: 'Team', icon: Users },
@@ -41,6 +43,7 @@ export const getNavItemsForUser = (user: User): NavItemType[] => {
   if (user.role === Role.HR) {
     return [
       { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'assistant', href: '/assistant', label: 'AI Copilot', icon: Sparkles },
       { id: 'attendance', href: '/attendance', label: 'Attendance', icon: CalendarCheck },
       { id: 'leave', href: '/leave', label: 'Leave Requests', icon: Briefcase },
       { id: 'users', href: '/users', label: 'Team Directory', icon: Users },
@@ -56,6 +59,7 @@ export const getNavItemsForUser = (user: User): NavItemType[] => {
   const isVisitor = user.department === 'Visitor' || user.role === Role.VISITOR;
   const items: NavItemType[] = [
     { id: 'dashboard', href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'assistant', href: '/assistant', label: 'AI Copilot', icon: Sparkles },
     { id: 'attendance', href: '/attendance', label: 'Attendance', icon: Calendar },
     { id: 'leave', href: '/leave', label: 'Leave', icon: Briefcase, hide: isVisitor },
     { id: 'profile', href: '/profile', label: 'Profile', icon: UserIcon },
